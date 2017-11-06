@@ -1,0 +1,23 @@
+{
+  "userid": "jacob",
+  "fullname": "Jacob Mendelowitz",
+  "friends": [
+    "jason",
+    "stephen"
+  ],
+  "groups": [
+    "squad-up",
+    "apartment-360",
+    "dank-lunch-crew"
+  ]
+},
+
+{
+  "groupid": "squad-up",
+  "fullname": "SquadUp Team",
+  "members": [
+    "jacob",
+    "jason",
+    "stephen"
+  ]
+}
