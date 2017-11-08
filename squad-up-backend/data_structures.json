@@ -1,6 +1,6 @@
 {
-  "userid": "jacob",
-  "fullname": "Jacob Mendelowitz",
+  "id": "jacob",
+  "name": "Jacob Mendelowitz",
   "friends": [
     "jason",
     "stephen"
@@ -13,8 +13,8 @@
 },
 
 {
-  "groupid": "squad-up",
-  "fullname": "SquadUp Team",
+  "id": "squad-up",
+  "name": "SquadUp Team",
   "members": [
     "jacob",
     "jason",

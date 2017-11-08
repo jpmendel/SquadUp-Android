@@ -16,11 +16,11 @@ const RequestType = {
   READ: 2
 };
 
-function createUserRecord(data) {
-  const dataKey = datastore.key(["Kind", data.key]);
+function createUserRecord(user) {
+  const userKey = datastore.key(["User", user.id]);
   const entity = {
-    key: dataKey,
-    data: data
+    key: userKey,
+    data: user
   };
   return datastore.save(entity)
     .catch((err) => {
@@ -28,20 +28,52 @@ function createUserRecord(data) {
     });
 }
 
-function deleteUserRecord(key) {
-  const dataKey = datastore.key(["Kind", key]);
-  return datastore.delete(dataKey)
+function deleteUserRecord(userID) {
+  const userKey = datastore.key(["User", userID]);
+  return datastore.delete(userKey)
     .catch((err) => {
       console.error("Error: " + err);
     });
 }
 
-function getUserRecord(key) {
-  const query = datastore.createQuery("Kind")
-    .filter("key", key);
+function getUserRecord(userID) {
+  const query = datastore.createQuery("User")
+    .filter("id", userID);
   return datastore.runQuery(query)
-    .then((data) => {
-      return data[0][0];
+    .then((results) => {
+      return results[0][0];
+    })
+    .catch((err) => {
+      console.error("Error: " + err);
+    });
+}
+
+function createGroupRecord(group) {
+  const groupKey = datastore.key(["Group", group.id]);
+  const entity = {
+    key: groupKey,
+    data: group
+  };
+  return datastore.save(entity)
+    .catch((err) => {
+      console.error("Error: " + err);
+    });
+}
+
+function deleteGroupRecord(groupID) {
+  const groupKey = datastore.key(["Group", groupID]);
+  return datastore.delete(groupKey)
+    .catch((err) => {
+      console.error("Error: " + err);
+    });
+}
+
+function getGroupRecord(groupID) {
+  const query = datastore.createQuery("Group")
+    .filter("id", groupID);
+  return datastore.runQuery(query)
+    .then((results) => {
+      return results[0][0];
     })
     .catch((err) => {
       console.error("Error: " + err);
@@ -53,12 +85,12 @@ app.post("/users", (req, res) => {
   if (data.requestType === RequestType.CREATE) {
     createUserRecord(data.content)
       .then(() => {
-        res.json({content: "Success"}).end();
+        res.json({content: "Success: Created User"}).end();
       });
   } else if (data.requestType === RequestType.DELETE) {
     deleteUserRecord(data.content)
       .then(() => {
-        res.json({content: "Success"}).end();
+        res.json({content: "Success: Deleted User"}).end();
       });
   } else if (data.requestType === RequestType.READ) {
     getUserRecord(data.content)
@@ -73,12 +105,12 @@ app.post("/groups", (req, res) => {
   if (data.requestType === RequestType.CREATE) {
     createGroupRecord(data.content)
       .then(() => {
-        res.json({content: "Success"}).end();
+        res.json({content: "Success: Created Group"}).end();
       });
   } else if (data.requestType === RequestType.DELETE) {
     deleteGroupRecord(data.content)
       .then(() => {
-        res.json({content: "Success"}).end();
+        res.json({content: "Success: Deleted Group"}).end();
       });
   } else if (data.requestType === RequestType.READ) {
     getGroupRecord(data.content)
