@@ -1,5 +1,6 @@
 package com.squadup.squadup.activity
 
+import android.app.PendingIntent.getActivity
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -8,12 +9,17 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.squadup.squadup.R
 import android.content.Intent
 import android.util.Log
+import android.widget.Button
 import com.google.android.gms.auth.api.signin.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.common.api.ApiException
 import android.widget.Toast
+import android.support.annotation.NonNull
+import com.google.android.gms.tasks.OnCompleteListener
+
+
 
 
 class LoginActivity : AppCompatActivity() {
@@ -48,9 +54,13 @@ class LoginActivity : AppCompatActivity() {
     fun updateUI(account: GoogleSignInAccount?){
         //TODO: If User account exists: Then move to next activity. Otherwise, display Google Login Button.
         if (account != null) {
-            findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.GONE);
+            findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.GONE)
+            findViewById<Button>(R.id.signOutButton).visibility = View.VISIBLE
             Toast.makeText(this,
                     "User has logged in!", Toast.LENGTH_SHORT).show()
+            Log.i("Login", "User Name " + account.displayName)
+            Log.i("Login", "Email " + account.email)
+            Log.i("Login", "Account ID " + account.id)
         } else {
             Toast.makeText(this,
                     "User is not logged in!", Toast.LENGTH_SHORT).show()
@@ -63,6 +73,17 @@ class LoginActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
+    fun signOut(view: View){
+        Log.i("Login", "Sign out Function")
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(this) {
+                    findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.VISIBLE)
+                    findViewById<Button>(R.id.signOutButton).setVisibility(View.GONE)
+                }
+        Toast.makeText(this,
+                "Successfully logged out!!", Toast.LENGTH_SHORT).show()
+    }
+
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -72,6 +93,11 @@ class LoginActivity : AppCompatActivity() {
             // a listener.
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
+
+            if(!GoogleSignIn.hasPermissions(account, )
+
+
+
 
             // Signed in successfully, show authenticated UI.
             updateUI(account)
