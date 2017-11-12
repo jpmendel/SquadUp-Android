@@ -8,16 +8,14 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.messaging.FirebaseMessaging
+import com.squadup.squadup.data.ServerData
 import com.squadup.squadup.data.User
-import com.squadup.squadup.util.MessageRequest
+import com.squadup.squadup.service.FirebaseIDService
+import com.squadup.squadup.service.FirebaseMessageService
 import org.json.JSONArray
 import org.json.JSONObject
 
 class BackendManager(context: Context?) {
-
-    companion object {
-        val API_KEY = "AIzaSyD_uID8KaMQCDczriDDQAQWF1PV2NLbzfM"
-    }
 
     private val DATASTORE_SERVER_URL = "https://squadup-185416.appspot.com/"
     private val MESSAGING_SERVER_URL = "https://fcm.googleapis.com/fcm/send"
@@ -34,34 +32,40 @@ class BackendManager(context: Context?) {
     private fun sendPostRequest(address: String, data: JSONObject,
                                 responseHandler: (response: JSONObject?) -> Unit,
                                 errorHandler: (error: VolleyError?) -> Unit) {
-        val postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
-        httpRequestQueue.add(postRequest)
-    }
-
-    private fun sendMessageRequest(address: String, data: JSONObject,
-                                responseHandler: (response: JSONObject?) -> Unit,
-                                errorHandler: (error: VolleyError?) -> Unit) {
-        val postRequest = MessageRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
-        httpRequestQueue.add(postRequest)
+        if (address == MESSAGING_SERVER_URL) {
+            val postRequest = object : JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler) {
+                override fun getHeaders(): MutableMap<String, String> {
+                    val params = mutableMapOf<String, String>()
+                    params.put("Content-Type", "application/json")
+                    params.put("Authorization", "key=" + ServerData.SERVER_KEY)
+                    return params
+                }
+            }
+            httpRequestQueue.add(postRequest)
+        } else {
+            val postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
+            httpRequestQueue.add(postRequest)
+        }
     }
 
     fun startListening(channel: String) {
         FirebaseMessaging.getInstance().subscribeToTopic(channel)
+        Log.i("BackendManager", "Started listening to: " + channel)
     }
 
     fun stopListening(channel: String) {
         FirebaseMessaging.getInstance().unsubscribeFromTopic(channel)
+        Log.i("BackendManager", "Stopped listening to: " + channel)
     }
 
     fun sendMessage(channel: String, message: String) {
         val json = JSONObject()
-        val content = JSONObject()
-        content.put("topic", channel)
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + channel)
         val data = JSONObject()
         data.put("text", message)
-        content.put("data", data)
-        json.put("message", content)
-        sendMessageRequest(MESSAGING_SERVER_URL, json, {
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
             response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
         }, {
