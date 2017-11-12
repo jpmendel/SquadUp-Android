@@ -14,6 +14,7 @@ class LaunchActivity : AppCompatActivity() {
         Handler().postDelayed({
             val intent = Intent(this, PubSubTestActivity::class.java)
             startActivity(intent)
+            overridePendingTransition(R.anim.screen_enter, R.anim.screen_exit)
         }, 1500)
     }
 }
