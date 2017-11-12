@@ -1,27 +1,33 @@
 package com.squadup.squadup.manager
 
 import android.content.Context
-import android.util.Base64
 import android.util.Log
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.squadup.squadup.data.Group
+import com.google.firebase.messaging.FirebaseMessaging
 import com.squadup.squadup.data.User
+import com.squadup.squadup.util.MessageRequest
 import org.json.JSONArray
 import org.json.JSONObject
 
 class BackendManager(context: Context?) {
 
-    private val SERVER_URL = "https://squadup-185416.appspot.com"
+    companion object {
+        val API_KEY = "AIzaSyD_uID8KaMQCDczriDDQAQWF1PV2NLbzfM"
+    }
+
+    private val DATASTORE_SERVER_URL = "https://squadup-185416.appspot.com/"
+    private val MESSAGING_SERVER_URL = "https://fcm.googleapis.com/fcm/send"
+
+    private val USER = 1
+    private val GROUP = 2
 
     private val CREATE = 1
     private val DELETE = 2
     private val READ = 3
-    private val PUBLISH = 4
-    private val SUBSCRIBE = 5
 
     private var httpRequestQueue: RequestQueue = Volley.newRequestQueue(context)
 
@@ -30,6 +36,38 @@ class BackendManager(context: Context?) {
                                 errorHandler: (error: VolleyError?) -> Unit) {
         val postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
         httpRequestQueue.add(postRequest)
+    }
+
+    private fun sendMessageRequest(address: String, data: JSONObject,
+                                responseHandler: (response: JSONObject?) -> Unit,
+                                errorHandler: (error: VolleyError?) -> Unit) {
+        val postRequest = MessageRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
+        httpRequestQueue.add(postRequest)
+    }
+
+    fun startListening(channel: String) {
+        FirebaseMessaging.getInstance().subscribeToTopic(channel)
+    }
+
+    fun stopListening(channel: String) {
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(channel)
+    }
+
+    fun sendMessage(channel: String, message: String) {
+        val json = JSONObject()
+        val content = JSONObject()
+        content.put("topic", channel)
+        val data = JSONObject()
+        data.put("text", message)
+        content.put("data", data)
+        json.put("message", content)
+        sendMessageRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
     }
 
     private fun buildJSONFromUser(user: User): JSONObject {
@@ -64,77 +102,14 @@ class BackendManager(context: Context?) {
         return user
     }
 
-    fun createChannel(channel: String) {
-        val json = JSONObject()
-        json.put("requestType", CREATE)
-        json.put("content", channel)
-        sendPostRequest(SERVER_URL + "/messages", json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
-    }
-
-    fun deleteChannel(channel: String) {
-        val json = JSONObject()
-        json.put("requestType", DELETE)
-        json.put("content", channel)
-        sendPostRequest(SERVER_URL + "/messages", json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
-    }
-
-    fun publishMessage(channel: String, message: String) {
-        val json = JSONObject()
-        json.put("requestType", PUBLISH)
-        val content = JSONObject()
-        content.put("channel", channel)
-        content.put("message", message)
-        json.put("content", content)
-        sendPostRequest(SERVER_URL + "/messages", json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
-    }
-
-    fun listenForMessage(channel: String, timeout: Float, callback: (message: String?) -> Unit) {
-        val json = JSONObject()
-        json.put("requestType", SUBSCRIBE)
-        val content = JSONObject()
-        content.put("channel", channel)
-        content.put("timeout", timeout)
-        json.put("content", content)
-        sendPostRequest(SERVER_URL + "/messages", json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-            if (response != null) {
-                callback(response.getString("message"))
-            } else {
-                callback(null)
-            }
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-            callback(null)
-        })
-    }
-
     fun createUserRecord(user: User) {
         val json = JSONObject()
+        json.put("dataType", USER)
         json.put("requestType", CREATE)
         json.put("content", buildJSONFromUser(user))
-        sendPostRequest(SERVER_URL + "/users", json, {
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
             response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
+            Log.i("BackendManager", "Response: " + response?.getString("content"))
         }, {
             error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
@@ -143,11 +118,12 @@ class BackendManager(context: Context?) {
 
     fun deleteUserRecord(userID: String) {
         val json = JSONObject()
+        json.put("dataType", USER)
         json.put("requestType", DELETE)
         json.put("content", userID)
-        sendPostRequest(SERVER_URL + "/users", json, {
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
             response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
+            Log.i("BackendManager", "Response: " + response?.getString("content"))
         }, {
             error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
@@ -156,9 +132,10 @@ class BackendManager(context: Context?) {
 
     fun getUserRecord(userID: String, callback: (user: User?) -> Unit) {
         val json = JSONObject()
+        json.put("dataType", USER)
         json.put("requestType", READ)
         json.put("content", userID)
-        sendPostRequest(SERVER_URL + "/users", json, {
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
             response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
             if (response != null) {

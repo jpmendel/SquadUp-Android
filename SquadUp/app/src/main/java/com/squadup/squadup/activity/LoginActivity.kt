@@ -94,7 +94,7 @@ class LoginActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
 
-            if(!GoogleSignIn.hasPermissions(account, )
+            //if (!GoogleSignIn.hasPermissions(account, )
 
 
 

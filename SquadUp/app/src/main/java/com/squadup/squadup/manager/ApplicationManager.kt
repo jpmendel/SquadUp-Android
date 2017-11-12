@@ -4,6 +4,10 @@ import android.app.Application
 
 class ApplicationManager : Application() {
 
-    var backend: BackendManager = BackendManager(applicationContext)
+    lateinit var backend: BackendManager
+
+    fun setup() {
+        backend = BackendManager(applicationContext)
+    }
 
 }
