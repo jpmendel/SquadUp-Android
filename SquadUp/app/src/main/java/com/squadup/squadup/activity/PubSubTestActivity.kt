@@ -64,7 +64,7 @@ class PubSubTestActivity : BaseActivity() {
 
     private fun setupButtons() {
         sendButton.setOnClickListener {
-            app.backend.sendMessage("messages", "Hello World!")
+            app.backend.sendMessage("messages", "You Have 1 New Message!")
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")
