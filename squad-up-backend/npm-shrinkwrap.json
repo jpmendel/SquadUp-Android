@@ -232,6 +232,47 @@
         }
       }
     },
+    "@google-cloud/pubsub": {
+      "version": "0.14.8",
+      "resolved": "https://registry.npmjs.org/@google-cloud/pubsub/-/pubsub-0.14.8.tgz",
+      "integrity": "sha512-SarceyFmvq6xnn8pkirdjpP25O3GRFMzr2oO3OGEnA7K8l0ObPHjU6R+DJbOS5UVpP4Vi2vHj3w8XTDM18dicA==",
+      "requires": {
+        "@google-cloud/common": "0.13.6",
+        "@google-cloud/common-grpc": "0.4.2",
+        "arrify": "1.0.1",
+        "async-each": "1.0.1",
+        "extend": "3.0.1",
+        "google-auto-auth": "0.7.2",
+        "google-gax": "0.13.5",
+        "google-proto-files": "0.13.1",
+        "is": "3.2.1",
+        "lodash.snakecase": "4.1.1",
+        "uuid": "3.1.0"
+      },
+      "dependencies": {
+        "@google-cloud/common-grpc": {
+          "version": "0.4.2",
+          "resolved": "https://registry.npmjs.org/@google-cloud/common-grpc/-/common-grpc-0.4.2.tgz",
+          "integrity": "sha1-jPb7vkGZdueOtuD+aoGXTEYfMaw=",
+          "requires": {
+            "@google-cloud/common": "0.13.6",
+            "dot-prop": "2.4.0",
+            "duplexify": "3.5.1",
+            "extend": "3.0.1",
+            "grpc": "1.6.6",
+            "is": "3.2.1",
+            "modelo": "4.2.0",
+            "retry-request": "3.0.0",
+            "through2": "2.0.3"
+          }
+        },
+        "google-proto-files": {
+          "version": "0.13.1",
+          "resolved": "https://registry.npmjs.org/google-proto-files/-/google-proto-files-0.13.1.tgz",
+          "integrity": "sha512-CivI3rZ85dMPTCAyxq6lq9s7vDkeWEIFxweopC1vEjjRmFMJwOX/MOmFZ90a0BGal/Dsb63vq7Ael9ryeokz0g=="
+        }
+      }
+    },
     "@protobufjs/aspromise": {
       "version": "1.1.2",
       "resolved": "https://registry.npmjs.org/@protobufjs/aspromise/-/aspromise-1.1.2.tgz",
@@ -511,8 +552,7 @@
     "async-each": {
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/async-each/-/async-each-1.0.1.tgz",
-      "integrity": "sha1-GdOGodntxufByF04iu28xW0zYC0=",
-      "dev": true
+      "integrity": "sha1-GdOGodntxufByF04iu28xW0zYC0="
     },
     "asynckit": {
       "version": "0.4.0",
@@ -4805,6 +4845,11 @@
       "version": "3.0.1",
       "resolved": "https://registry.npmjs.org/lodash.noop/-/lodash.noop-3.0.1.tgz",
       "integrity": "sha1-OBiPTWUKOkdCWEObluxFsyYXEzw="
+    },
+    "lodash.snakecase": {
+      "version": "4.1.1",
+      "resolved": "https://registry.npmjs.org/lodash.snakecase/-/lodash.snakecase-4.1.1.tgz",
+      "integrity": "sha1-OdcUo1NXFHg3rv1ktdy7Fr7Nj40="
     },
     "log-driver": {
       "version": "1.2.5",
