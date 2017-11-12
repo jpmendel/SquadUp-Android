@@ -3,7 +3,6 @@
     package="com.squadup.squadup">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".manager.ApplicationManager"
