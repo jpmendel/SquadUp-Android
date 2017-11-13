@@ -1,6 +1,5 @@
 package com.squadup.squadup.activity
 
-import android.app.PendingIntent.getActivity
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -94,7 +93,7 @@ class LoginActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
 
-            if(!GoogleSignIn.hasPermissions(account, )
+
 
 
 
