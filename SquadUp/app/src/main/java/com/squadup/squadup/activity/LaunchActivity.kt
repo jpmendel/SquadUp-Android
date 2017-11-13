@@ -33,10 +33,12 @@ class LaunchActivity : BaseActivity() {
     private val animateSplashImage = object : Runnable {
         override fun run() {
             splashImage.animate()
+                    .scaleX(0.9f)
                     .scaleY(1.1f)
                     .duration = 500
             Handler().postDelayed({
                 splashImage.animate()
+                        .scaleX(1.0f)
                         .scaleY(1.0f)
                         .duration = 500
             }, 500)
