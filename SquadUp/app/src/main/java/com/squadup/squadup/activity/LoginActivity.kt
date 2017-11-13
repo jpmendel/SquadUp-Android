@@ -1,27 +1,24 @@
 package com.squadup.squadup.activity
 
-import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
-import android.view.View
-import com.google.android.gms.common.SignInButton
-import com.google.android.gms.common.api.GoogleApiClient
-import com.squadup.squadup.R
+
 import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import android.widget.Button
-import com.google.android.gms.auth.api.signin.*
+import android.widget.Toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.tasks.Task
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
-import android.widget.Toast
-import android.support.annotation.NonNull
-import com.google.android.gms.tasks.OnCompleteListener
+import com.squadup.squadup.R
 
 
-
-
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
     lateinit var mGoogleSignInClient : GoogleSignInClient
     private val RC_SIGN_IN = 9001 //Value taken from Google: https://github.com/googlesamples/google-services/blob/master/android/signin/app/src/main/java/com/google/samples/quickstart/signin/SignInActivity.java
 
@@ -94,13 +91,11 @@ class LoginActivity : AppCompatActivity() {
             val account = task.getResult(ApiException::class.java)
 
 
-
-
-
-
             // Signed in successfully, show authenticated UI.
             updateUI(account)
-
+            Handler().postDelayed({
+                showScreen(MessagingTestActivity::class.java)
+            }, 1000)
         }
     }
 
