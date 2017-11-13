@@ -10,7 +10,7 @@ class LaunchActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
         Handler().postDelayed({
-            showScreen(PubSubTestActivity::class.java)
+            showScreen(MessagingTestActivity::class.java)
         }, 1500)
     }
 

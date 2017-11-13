@@ -10,9 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 
-
-
-class PubSubTestActivity : BaseActivity() {
+class MessagingTestActivity : BaseActivity() {
 
     lateinit var messageText: TextView
 
@@ -22,14 +20,23 @@ class PubSubTestActivity : BaseActivity() {
 
     lateinit var stopListeningButton: Button
 
+    lateinit var listeningText: TextView
+
     lateinit var broadcastManager: LocalBroadcastManager
+
+    private var messagesReceived: Int = 0
 
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == TEXT_MESSAGE) {
                 val message = intent.getStringExtra("message")
                 if (message != null) {
-                    messageText.text = message
+                    messagesReceived++
+                    if (messagesReceived == 1) {
+                        messageText.text = "You Have $messagesReceived New Message!"
+                    } else {
+                        messageText.text = "You Have $messagesReceived New Messages!"
+                    }
                 }
             }
         }
@@ -37,7 +44,7 @@ class PubSubTestActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pub_sub_test)
+        setContentView(R.layout.activity_messaging_test)
         initializeViews()
         initializeBroadcastReceiver()
         setupButtons()
@@ -53,6 +60,7 @@ class PubSubTestActivity : BaseActivity() {
         sendButton = findViewById(R.id.send_button)
         startListeningButton = findViewById(R.id.start_listening_button)
         stopListeningButton = findViewById(R.id.stop_listening_button)
+        listeningText = findViewById(R.id.listening_text)
     }
 
     private fun initializeBroadcastReceiver() {
@@ -64,13 +72,15 @@ class PubSubTestActivity : BaseActivity() {
 
     private fun setupButtons() {
         sendButton.setOnClickListener {
-            app.backend.sendMessage("messages", "You Have 1 New Message!")
+            app.backend.sendMessage("messages", "Hello World!")
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")
+            listeningText.text = "Listening To: (Messages)"
         }
         stopListeningButton.setOnClickListener {
             app.backend.stopListening("messages")
+            listeningText.text = "Listening To: (Nothing)"
         }
     }
 

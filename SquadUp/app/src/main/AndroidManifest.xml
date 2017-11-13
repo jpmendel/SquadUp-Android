@@ -39,7 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.PubSubTestActivity"
+            android:name=".activity.MessagingTestActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".activity.BaseActivity"/>
     </application>

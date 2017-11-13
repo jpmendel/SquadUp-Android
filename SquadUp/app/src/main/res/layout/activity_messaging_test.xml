@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.squadup.squadup.activity.PubSubTestActivity">
+    tools:context="com.squadup.squadup.activity.MessagingTestActivity">
 
     <TextView
         android:id="@+id/message_text"
@@ -47,4 +47,15 @@
         android:paddingBottom="20dp"
         android:paddingTop="20dp"
         android:text="Stop\nListening" />
+
+    <TextView
+        android:id="@+id/listening_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:text="Listening To: (Nothing)"
+        android:textColor="@android:color/black"
+        android:textSize="20sp" />
 </RelativeLayout>
