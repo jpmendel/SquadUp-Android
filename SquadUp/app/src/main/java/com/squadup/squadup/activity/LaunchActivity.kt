@@ -2,6 +2,7 @@ package com.squadup.squadup.activity
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Parcelable
 import com.squadup.squadup.R
 
 class LaunchActivity : BaseActivity() {

@@ -17,7 +17,6 @@ class FirebaseMessageService : FirebaseMessagingService() {
                     broadcastTextMessage(message.data["text"]!!)
                 }
             }
-
             if (message.notification != null) {
                 Log.i("FirebaseMessageService", "Notification: " + message.notification.toString())
             }

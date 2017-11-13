@@ -1,9 +1,7 @@
 package com.squadup.squadup.activity
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
 import com.squadup.squadup.R
 import com.squadup.squadup.manager.ApplicationManager
@@ -23,23 +21,30 @@ open class BaseActivity : AppCompatActivity() {
         app.setup()
     }
 
-    protected fun showScreen(screen: Class<*>, data: MutableMap<String, Parcelable>? = null) {
+    protected fun showScreen(screen: Class<*>, setup: ((intent: Intent) -> Unit)? = null) {
         val intent = Intent(this, screen)
-        if (data != null) {
-            for (item in data) {
-                intent.putExtra(item.key, item.value)
-            }
+        if (setup != null) {
+            setup(intent)
         }
         startActivity(intent)
-        overridePendingTransition(R.anim.screen_enter, R.anim.screen_exit)
+        overridePendingTransition(R.anim.screen_enter_from_right, R.anim.screen_exit_to_left)
     }
 
     protected fun backScreen() {
         finish()
+        overridePendingTransition(R.anim.screen_enter_from_left, R.anim.screen_exit_to_right)
     }
 
     protected fun backToScreen(screen: Class<*>) {
+        val intent = Intent(this, screen)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        overridePendingTransition(R.anim.screen_enter_from_left, R.anim.screen_exit_to_right)
+    }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.screen_enter_from_left, R.anim.screen_exit_to_right)
     }
 
 }
