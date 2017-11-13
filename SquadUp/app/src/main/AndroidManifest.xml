@@ -30,6 +30,7 @@
             </intent-filter>
         </service>
 
+        <activity android:name=".activity.BaseActivity"/>
         <activity
             android:name=".activity.LaunchActivity"
             android:screenOrientation="portrait">
@@ -39,9 +40,11 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activity.LoginActivity"
+            android:screenOrientation="portrait"/>
+        <activity
             android:name=".activity.MessagingTestActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name=".activity.BaseActivity"/>
     </application>
 
 </manifest>

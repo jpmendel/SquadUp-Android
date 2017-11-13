@@ -2,6 +2,7 @@ package com.squadup.squadup.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -16,7 +17,7 @@ import com.google.android.gms.common.api.ApiException
 import com.squadup.squadup.R
 
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
     lateinit var mGoogleSignInClient : GoogleSignInClient
     private val RC_SIGN_IN = 9001 //Value taken from Google: https://github.com/googlesamples/google-services/blob/master/android/signin/app/src/main/java/com/google/samples/quickstart/signin/SignInActivity.java
 
@@ -88,14 +89,11 @@ class LoginActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
 
-            //if (!GoogleSignIn.hasPermissions(account, )
-
-
-
-
             // Signed in successfully, show authenticated UI.
             updateUI(account)
-
+            Handler().postDelayed({
+                showScreen(MessagingTestActivity::class.java)
+            }, 1000)
         }
     }
 

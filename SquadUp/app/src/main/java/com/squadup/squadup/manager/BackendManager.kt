@@ -15,20 +15,31 @@ import com.squadup.squadup.service.FirebaseMessageService
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * A manager class to handle any data being sent to or received by the Google App Engine backend.
+ * Also handles sending of Firebase messages.
+ */
 class BackendManager(context: Context?) {
 
+    // URL for the Google App Engine datastore.
     private val DATASTORE_SERVER_URL = "https://squadup-185416.appspot.com/"
+
+    // URL for the Firebase messaging server.
     private val MESSAGING_SERVER_URL = "https://fcm.googleapis.com/fcm/send"
 
+    // Data types stored in GAE.
     private val USER = 1
     private val GROUP = 2
 
+    // Operations for data in GAE.
     private val CREATE = 1
     private val DELETE = 2
     private val READ = 3
 
+    // A request queue to handle HTTP requests made by the app.
     private var httpRequestQueue: RequestQueue = Volley.newRequestQueue(context)
 
+    // Sends a JSON post request to a server address.
     private fun sendPostRequest(address: String, data: JSONObject,
                                 responseHandler: (response: JSONObject?) -> Unit,
                                 errorHandler: (error: VolleyError?) -> Unit) {
@@ -48,20 +59,23 @@ class BackendManager(context: Context?) {
         }
     }
 
-    fun startListening(channel: String) {
-        FirebaseMessaging.getInstance().subscribeToTopic(channel)
-        Log.i("BackendManager", "Started listening to: " + channel)
+    // Start listening to a topic. Any messages sent to the same topic will be received.
+    fun startListening(topic: String) {
+        FirebaseMessaging.getInstance().subscribeToTopic(topic)
+        Log.i("BackendManager", "Started listening to: " + topic)
     }
 
-    fun stopListening(channel: String) {
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(channel)
-        Log.i("BackendManager", "Stopped listening to: " + channel)
+    // Stop listening to a topic. Any messages sent to the same topic will no longer be received.
+    fun stopListening(topic: String) {
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
+        Log.i("BackendManager", "Stopped listening to: " + topic)
     }
 
-    fun sendMessage(channel: String, message: String) {
+    // Send a message to a certain topic. Any users listening to that topic will receive the message.
+    fun sendMessage(topic: String, message: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        json.put("to", "/topics/" + channel)
+        json.put("to", "/topics/" + topic)
         val data = JSONObject()
         data.put("text", message)
         json.put("data", data)
@@ -74,6 +88,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Build a JSON object from a User object.
     private fun buildJSONFromUser(user: User): JSONObject {
         val userObj = JSONObject()
         userObj.put("id", user.id)
@@ -91,6 +106,7 @@ class BackendManager(context: Context?) {
         return userObj
     }
 
+    // Build a User object from a JSON object.
     private fun buildUserFromJSON(json: JSONObject): User {
         val id = json.getString("id")
         val name = json.getString("name")
@@ -106,6 +122,7 @@ class BackendManager(context: Context?) {
         return user
     }
 
+    // Create a record for a User in Google App Engine.
     fun createUserRecord(user: User) {
         val json = JSONObject()
         json.put("dataType", USER)
@@ -120,6 +137,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Delete a record for a User in Google App Engine.
     fun deleteUserRecord(userID: String) {
         val json = JSONObject()
         json.put("dataType", USER)
@@ -134,6 +152,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Retrieve a record for a User in Google App Engine.
     fun getUserRecord(userID: String, callback: (user: User?) -> Unit) {
         val json = JSONObject()
         json.put("dataType", USER)

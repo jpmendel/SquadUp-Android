@@ -12,17 +12,17 @@ import android.content.IntentFilter
 
 class MessagingTestActivity : BaseActivity() {
 
-    lateinit var messageText: TextView
+    private lateinit var messageText: TextView
 
-    lateinit var sendButton: Button
+    private lateinit var sendButton: Button
 
-    lateinit var startListeningButton: Button
+    private lateinit var startListeningButton: Button
 
-    lateinit var stopListeningButton: Button
+    private lateinit var stopListeningButton: Button
 
-    lateinit var listeningText: TextView
+    private lateinit var listeningText: TextView
 
-    lateinit var broadcastManager: LocalBroadcastManager
+    private lateinit var broadcastManager: LocalBroadcastManager
 
     private var messagesReceived: Int = 0
 

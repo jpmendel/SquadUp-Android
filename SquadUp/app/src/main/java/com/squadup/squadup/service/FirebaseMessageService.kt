@@ -7,8 +7,13 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.squadup.squadup.activity.BaseActivity
 
+/**
+ * The messaging service for Firebase, responsible for handling messages sent by other
+ * instances of the app.
+ */
 class FirebaseMessageService : FirebaseMessagingService() {
 
+    // Handle a data message or push notification sent by another app.
     override fun onMessageReceived(message: RemoteMessage?) {
         if (message != null) {
             if (message.data.isNotEmpty()) {
@@ -23,6 +28,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
         }
     }
 
+    // Broadcasts a text message so any activity listening for it can access the data.
     private fun broadcastTextMessage(message: String) {
         val intent = Intent(BaseActivity.TEXT_MESSAGE)
         intent.putExtra("message", message)
