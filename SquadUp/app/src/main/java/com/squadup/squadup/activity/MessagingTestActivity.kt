@@ -16,6 +16,8 @@ class MessagingTestActivity : BaseActivity() {
 
     private lateinit var sendButton: Button
 
+    private lateinit var notificationButton: Button
+
     private lateinit var startListeningButton: Button
 
     private lateinit var stopListeningButton: Button
@@ -58,6 +60,7 @@ class MessagingTestActivity : BaseActivity() {
     private fun initializeViews() {
         messageText = findViewById(R.id.message_text)
         sendButton = findViewById(R.id.send_button)
+        notificationButton = findViewById(R.id.notification_button)
         startListeningButton = findViewById(R.id.start_listening_button)
         stopListeningButton = findViewById(R.id.stop_listening_button)
         listeningText = findViewById(R.id.listening_text)
@@ -73,6 +76,9 @@ class MessagingTestActivity : BaseActivity() {
     private fun setupButtons() {
         sendButton.setOnClickListener {
             app.backend.sendMessage("messages", "Hello World!")
+        }
+        notificationButton.setOnClickListener {
+            app.backend.sendNotification("messages", "SquadUp", "Hey, let meet up!")
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")

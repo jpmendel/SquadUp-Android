@@ -8,6 +8,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.messaging.FirebaseMessaging
+import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.ServerData
 import com.squadup.squadup.data.User
 import com.squadup.squadup.service.FirebaseIDService
@@ -79,6 +80,23 @@ class BackendManager(context: Context?) {
         val data = JSONObject()
         data.put("text", message)
         json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendNotification(topic: String, title: String, body: String) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val notification = JSONObject()
+        notification.put("title", title)
+        notification.put("body", body)
+        json.put("notification", notification)
         sendPostRequest(MESSAGING_SERVER_URL, json, {
             response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)

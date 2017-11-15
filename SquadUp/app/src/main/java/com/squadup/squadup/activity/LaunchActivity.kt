@@ -22,7 +22,7 @@ class LaunchActivity : BaseActivity() {
         animationHandler.post(animateSplashImage)
         Handler().postDelayed({
             animationHandler.removeCallbacks(animateSplashImage)
-            presentScreen(LoginActivity::class.java)
+            presentScreen(MessagingTestActivity::class.java)
         }, 2000)
     }
 
