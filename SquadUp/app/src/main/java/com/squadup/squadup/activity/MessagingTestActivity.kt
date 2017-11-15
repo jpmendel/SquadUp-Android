@@ -78,7 +78,7 @@ class MessagingTestActivity : BaseActivity() {
             app.backend.sendMessage("messages", "Hello World!")
         }
         notificationButton.setOnClickListener {
-            app.backend.sendNotification("messages", "SquadUp", "Hey, let meet up!")
+            app.backend.sendNotification("messages", "SquadUp", "Hey, lets meet up!")
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")
