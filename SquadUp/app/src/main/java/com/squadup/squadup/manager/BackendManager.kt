@@ -73,12 +73,52 @@ class BackendManager(context: Context?) {
     }
 
     // Send a message to a certain topic. Any users listening to that topic will receive the message.
-    fun sendMessage(topic: String, message: String) {
+    fun sendTextMessage(topic: String, sender: String, text: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
         val data = JSONObject()
-        data.put("text", message)
+        data.put("type", FirebaseMessageService.TEXT)
+        data.put("sender", sender)
+        data.put("text", text)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendLoginMessage(topic: String, sender: String, latitude: Double, longitude: Double) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.LOGIN)
+        data.put("sender", sender)
+        data.put("latitude", latitude)
+        data.put("longitude", longitude)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendLocationMessage(topic: String, sender: String, latitude: Double, longitude: Double) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.LOCATION)
+        data.put("sender", sender)
+        data.put("latitude", latitude)
+        data.put("longitude", longitude)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, {
             response: JSONObject? ->

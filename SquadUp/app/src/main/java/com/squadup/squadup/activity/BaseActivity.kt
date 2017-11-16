@@ -14,6 +14,7 @@ open class BaseActivity : AppCompatActivity() {
 
     companion object {
         val TEXT_MESSAGE = "TEXT_MESSAGE"
+        val LOGIN_MESSAGE = "LOGIN_MESSAGE"
         val LOCATION_MESSAGE = "LOCATION_MESSAGE"
     }
 

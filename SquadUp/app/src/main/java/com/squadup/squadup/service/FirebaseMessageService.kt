@@ -13,13 +13,23 @@ import com.squadup.squadup.activity.BaseActivity
  */
 class FirebaseMessageService : FirebaseMessagingService() {
 
+    companion object {
+        val LOGIN = "LOGIN"
+        val LOCATION = "LOCATION"
+        val TEXT = "TEXT"
+    }
+
     // Handle a data message or push notification sent by another app.
     override fun onMessageReceived(message: RemoteMessage?) {
         if (message != null) {
             if (message.data.isNotEmpty()) {
                 Log.i("FirebaseMessageService", "Data: " + message.data)
-                if (message.data["text"] != null) {
-                    broadcastTextMessage(message.data["text"]!!)
+                if (message.data["type"] == LOGIN) {
+                    broadcastLoginMessage(message.data["sender"]!!, message.data["latitude"]!!.toDouble(), message.data["longitude"]!!.toDouble())
+                } else if (message.data["type"] == LOCATION) {
+                    broadcastLocationMessage(message.data["sender"]!!, message.data["latitude"]!!.toDouble(), message.data["longitude"]!!.toDouble())
+                } else if (message.data["type"] == TEXT) {
+                    broadcastTextMessage(message.data["sender"]!!, message.data["text"]!!)
                 }
             }
             if (message.notification != null) {
@@ -29,9 +39,26 @@ class FirebaseMessageService : FirebaseMessagingService() {
     }
 
     // Broadcasts a text message so any activity listening for it can access the data.
-    private fun broadcastTextMessage(message: String) {
+    private fun broadcastTextMessage(sender: String, text: String) {
         val intent = Intent(BaseActivity.TEXT_MESSAGE)
-        intent.putExtra("message", message)
+        intent.putExtra("sender", sender)
+        intent.putExtra("text", text)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun broadcastLoginMessage(sender: String, latitude: Double, longitude: Double) {
+        val intent = Intent(BaseActivity.LOGIN_MESSAGE)
+        intent.putExtra("sender", sender)
+        intent.putExtra("latitude", latitude)
+        intent.putExtra("longitude", longitude)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun broadcastLocationMessage(sender: String, latitude: Double, longitude: Double) {
+        val intent = Intent(BaseActivity.LOCATION_MESSAGE)
+        intent.putExtra("sender", sender)
+        intent.putExtra("latitude", latitude)
+        intent.putExtra("longitude", longitude)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
