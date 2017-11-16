@@ -8,7 +8,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.messaging.FirebaseMessaging
-import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.ServerData
 import com.squadup.squadup.data.User
 import com.squadup.squadup.service.FirebaseIDService
@@ -73,13 +72,14 @@ class BackendManager(context: Context?) {
     }
 
     // Send a message to a certain topic. Any users listening to that topic will receive the message.
-    fun sendTextMessage(topic: String, sender: String, text: String) {
+    fun sendTextMessage(topic: String, senderID: String, senderName: String, text: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
         val data = JSONObject()
         data.put("type", FirebaseMessageService.TEXT)
-        data.put("sender", sender)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
         data.put("text", text)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, {
@@ -91,13 +91,14 @@ class BackendManager(context: Context?) {
         })
     }
 
-    fun sendLoginMessage(topic: String, sender: String, latitude: Double, longitude: Double) {
+    fun sendLoginMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
         val data = JSONObject()
         data.put("type", FirebaseMessageService.LOGIN)
-        data.put("sender", sender)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
         data.put("latitude", latitude)
         data.put("longitude", longitude)
         json.put("data", data)
@@ -110,15 +111,73 @@ class BackendManager(context: Context?) {
         })
     }
 
-    fun sendLocationMessage(topic: String, sender: String, latitude: Double, longitude: Double) {
+    fun sendLocationMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
         val data = JSONObject()
         data.put("type", FirebaseMessageService.LOCATION)
-        data.put("sender", sender)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
         data.put("latitude", latitude)
         data.put("longitude", longitude)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendReadyRequestMessage(topic: String, senderID: String, senderName: String) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.READY_REQUEST)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendReadyResponseMessage(topic: String, senderID: String, senderName: String, receiverID: String, response: Boolean) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.READY_RESPONSE)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        data.put("receiverID", receiverID)
+        data.put("response", response)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendReadyDecisionMessage(topic: String, senderID: String, senderName: String, decision: Boolean) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", "/topics/" + topic)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.READY_RESPONSE)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        data.put("response", decision)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, {
             response: JSONObject? ->
@@ -157,10 +216,10 @@ class BackendManager(context: Context?) {
         }
         userObj.put("friends", friendArray)
         val groupArray = JSONArray()
-        for (group in user.groups) {
+        for (group in user.groupIDs) {
             groupArray.put(group)
         }
-        userObj.put("groups", user.groups)
+        userObj.put("groupIDs", user.groupIDs)
         return userObj
     }
 
@@ -173,9 +232,9 @@ class BackendManager(context: Context?) {
         for (i in 0 until friends.length()) {
             user.friends.add(friends[i] as String)
         }
-        val groups = json.getJSONArray("groups")
+        val groups = json.getJSONArray("groupIDs")
         for (i in 0 until groups.length()) {
-            user.groups.add(groups[i] as String)
+            user.groupIDs.add(groups[i] as String)
         }
         return user
     }

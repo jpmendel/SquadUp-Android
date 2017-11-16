@@ -46,13 +46,13 @@ class MessagingTestActivity : BaseActivity() {
                     }
                 }
             } else if (intent.action == LOGIN_MESSAGE) {
-                val sender = intent.getStringExtra("sender")
-                Toast.makeText(baseContext, String.format("%s has joined", sender), Toast.LENGTH_SHORT).show()
+                val senderName = intent.getStringExtra("senderName")
+                Toast.makeText(baseContext, String.format("%s has joined", senderName), Toast.LENGTH_SHORT).show()
             } else if (intent.action == LOCATION_MESSAGE) {
-                val sender = intent.getStringExtra("sender")
+                val senderName = intent.getStringExtra("senderName")
                 val latitude = intent.getDoubleExtra("latitude", 0.0)
                 val longitude = intent.getDoubleExtra("longitude", 0.0)
-                Toast.makeText(baseContext, String.format("%s is at (%f, %f)", sender, latitude, longitude), Toast.LENGTH_SHORT).show()
+                Toast.makeText(baseContext, String.format("%s is at (%f, %f)", senderName, latitude, longitude), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -70,7 +70,8 @@ class MessagingTestActivity : BaseActivity() {
         broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
-    private fun initializeViews() {
+    override fun initializeViews() {
+        super.initializeViews()
         messageText = findViewById(R.id.message_text)
         sendTextButton = findViewById(R.id.send_text_button)
         sendLoginButton = findViewById(R.id.send_login_button)
@@ -92,14 +93,14 @@ class MessagingTestActivity : BaseActivity() {
 
     private fun setupButtons() {
         sendTextButton.setOnClickListener {
-            app.backend.sendTextMessage("messages", "Jacob", "Hello World!")
+            app.backend.sendTextMessage("messages", "jacob", "Jacob Mendelowitz", "Hello World!")
         }
         sendLoginButton.setOnClickListener {
-            app.backend.sendLoginMessage("messages", "Jacob", 1.0, 1.0)
+            app.backend.sendLoginMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
             showScreen(MeetUpActivity::class.java)
         }
         sendLocationButton.setOnClickListener {
-            app.backend.sendLocationMessage("messages", "Jacob", 1.0, 1.0)
+            app.backend.sendLocationMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
         }
         notificationButton.setOnClickListener {
             app.backend.sendNotification("messages", "SquadUp", "Hey, lets meet up!")
