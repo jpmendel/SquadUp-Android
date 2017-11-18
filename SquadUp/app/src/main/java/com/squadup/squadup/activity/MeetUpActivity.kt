@@ -1,12 +1,14 @@
 package com.squadup.squadup.activity
 
 import android.content.*
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
@@ -98,9 +100,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_meet_up)
-        if (!PermissionManager.checkLocationPermission(this)) {
-            PermissionManager.requestLocationPermission(this)
-        }
         initializeViews()
         resetValues()
         setupButtons()
@@ -196,10 +195,14 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         initializeMap()
-        initializeLocationManager()
-        setInitialRegion()
-        initializeBroadcastReceiver()
-        sendLoginMessage()
+        if (PermissionManager.checkLocationPermission(this)) {
+            initializeLocationManager()
+            setInitialRegion()
+            initializeBroadcastReceiver()
+            sendLoginMessage()
+        } else {
+            PermissionManager.requestLocationPermission(this)
+        }
     }
 
     // Sets up the Google Map on the screen.
@@ -233,6 +236,18 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             myLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             if (myLocation != null) {
                 addLocation(user.id, user.name, LatLng(myLocation!!.latitude, myLocation!!.longitude))
+            }
+        }
+    }
+
+    // Used to run code that may have been skipped if the user hasn't given permission yet, but accepted after.
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (requestCode == PermissionManager.PERMISSION_REQUEST_CODE_LOCATION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initializeLocationManager()
+                setInitialRegion()
+                initializeBroadcastReceiver()
+                sendLoginMessage()
             }
         }
     }
