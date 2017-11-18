@@ -10,11 +10,10 @@ import android.os.Handler
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
+import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
@@ -22,46 +21,80 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.squadup.squadup.R
+import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.manager.PermissionManager
 
+/**
+ * An activity to manage the map screen where members of a group can find a location to meet up.
+ */
 class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
+    // The Google Map used to display everyone's location.
     private lateinit var map: GoogleMap
 
+    // The text displaying the status at the top of the screen.
     private lateinit var statusText: TextView
 
+    // FOR TESTING PURPOSES ONLY.
     private lateinit var testButton: Button
 
+    // The layout at the bottom of the screen containing two buttons.
+    private lateinit var lowerButtonLayout: LinearLayout
+
+    // The button used to find a meeting spot without all members present.
     private lateinit var meetNowButton: Button
 
+    // The button used to send push notifications to group members.
     private lateinit var notifyGroupButton: Button
 
+    // The layout holding the continue button below the screen.
+    private lateinit var continueButtonFrame: FrameLayout
+
+    // The button used to continue to the next screen.
+    private lateinit var continueButton: Button
+
+    // Manages receiving broadcast messages from the FirebaseMessageService.
     private lateinit var broadcastManager: LocalBroadcastManager
 
-    private lateinit var locationManager: LocationManager
-
+    // The current user of the app on this device.
     private lateinit var user: User
 
+    // The group the user is trying to meet with.
     private lateinit var group: Group
 
+    // Manages the requesting of location updates.
+    private lateinit var locationManager: LocationManager
+
+    // The location of the current user.
     private var myLocation: Location? = null
 
+    // A list of locations of group members.
     private var locations: MutableMap<String, LatLng> = mutableMapOf()
 
+    // A list of markers displayed on the map of group members.
     private var locationMarkers: MutableMap<String, Marker> = mutableMapOf()
 
-    private var meetingLocation: LatLng? = null
+    // The calculated meeting location for the group.
+    private var meetingLocation: Map.Entry<String, LatLng>? = null
 
+    // A list that keeps track of yes or no answers when requesting to meet early.
     private var readyResponses: MutableList<Boolean> = mutableListOf()
 
+    // Whether or not someone in the group has requested to meet early.
     private var requestedReady: Boolean = false
 
+    // Whether or not the app has started to find a meeting location.
+    private var findingMeetingLocation: Boolean = false
+
+    // Keeps track of the names displayed over group members' heads without centering on them.
     private var lastMarker: Marker? = null
 
+    // Handles the animation of the status text.
     private val animationHandler: Handler = Handler()
 
+    // Runs when the activity is loaded and created.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_meet_up)
@@ -74,6 +107,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         loadGoogleMap()
     }
 
+    // Runs when the activity is closed and removed from memory.
     override fun onDestroy() {
         super.onDestroy()
         stopAnimatingText()
@@ -81,16 +115,22 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
+    // Sets up all of the views on the screen.
     override fun initializeViews() {
         super.initializeViews()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         statusText = findViewById(R.id.status_text)
         testButton = findViewById(R.id.test_button)
+        lowerButtonLayout = findViewById(R.id.lower_button_layout)
         meetNowButton = findViewById(R.id.meet_now_button)
+        meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
         notifyGroupButton = findViewById(R.id.notify_button)
+        continueButtonFrame = findViewById(R.id.continue_button_frame)
+        continueButton = findViewById(R.id.continue_button)
         startAnimatingText()
     }
 
+    // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
     private fun initializeBroadcastReceiver() {
         broadcastManager = LocalBroadcastManager.getInstance(this)
         val intentFilter = IntentFilter()
@@ -103,6 +143,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         app.backend.startListening(group.id)
     }
 
+    // Resets any values associated with the activity.
     private fun resetValues() {
         user = User("jacob", "Jacob Mendelowitz")
         group = Group("squad-up", "SquadUp")
@@ -118,6 +159,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         readyResponses = mutableListOf()
     }
 
+    // Sets up any buttons on the screen.
     private fun setupButtons() {
         testButton.setOnClickListener {
             if (!locations.containsKey("jason")) {
@@ -139,13 +181,18 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         notifyGroupButton.setOnClickListener {
             onNotifyGroupButtonClick()
         }
+        continueButton.setOnClickListener {
+            onContinueButtonClick()
+        }
     }
 
+    // Loads the Google Map into the map fragment.
     private fun loadGoogleMap() {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        mapFragment.getMapAsync(this) // Will call onMapReady() when map is ready.
     }
 
+    // Called when the Google Map loads.
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         initializeMap()
@@ -155,7 +202,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         sendLoginMessage()
     }
 
-    // Sets up the Google Map on the layout.
+    // Sets up the Google Map on the screen.
     private fun initializeMap() {
         map.isBuildingsEnabled = true
         map.uiSettings.isMyLocationButtonEnabled = false
@@ -190,18 +237,20 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
-    // Sets the initial region on the map.
+    // Sets the initial region being viewed on the map.
     private fun setInitialRegion() {
         if (myLocation != null) {
             updateZoom(myLocation!!, 18f)
         }
     }
 
+    // Updates the zoom of the map.
     private fun updateZoom(location: Location, zoom: Float) {
         val userLocation = LatLng(location.latitude, location.longitude)
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, zoom))
     }
 
+    // Zooms the map to fit all locations of group members.
     private fun zoomToFit() {
         var minLat = 0.0
         var maxLat = 0.0
@@ -235,13 +284,14 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0))
     }
 
+    // Adds the location of a group member to the map and creates graphics.
     private fun addLocation(id: String, name: String, location: LatLng) {
         if (!locations.containsKey(id)) {
             locations[id] = location
             val icon = BitmapFactory.decodeResource(resources,
                         android.R.drawable.ic_menu_myplaces).copy(Bitmap.Config.ARGB_8888, true)
             val paint = Paint()
-            val filter = PorterDuffColorFilter(ContextCompat.getColor(this, R.color.color_accent), PorterDuff.Mode.SRC_IN)
+            val filter = PorterDuffColorFilter(ContextCompat.getColor(this, R.color.medium_orange), PorterDuff.Mode.SRC_IN)
             paint.colorFilter = filter
             val canvas = Canvas(icon)
             canvas.drawBitmap(icon, 0f, 0f, paint)
@@ -250,9 +300,13 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
                     .title(name)
                     .icon(BitmapDescriptorFactory.fromBitmap(icon)))
             locationMarkers[id] = marker
+            if (locations.count() > 1) {
+                meetNowButton.setBackgroundResource(R.drawable.shape_round_button_blue)
+            }
         }
     }
 
+    // Adds a line graphic to the map.
     private fun addLineToMap(start: LatLng, end: LatLng) {
         map.addPolyline(PolylineOptions()
                 .add(start)
@@ -260,25 +314,29 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
                 .width(5f))
     }
 
-    private fun addMeetingLocationToMap(location: LatLng) {
+    // Adds a graphic for the meeting location to the map.
+    private fun addMeetingLocationToMap(name: String, location: LatLng) {
         map.addMarker(MarkerOptions()
                 .position(location)
-                .title("Meeting Spot")
+                .title(name)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)))
     }
 
+    // Sends a message that the user has entered the map screen.
     private fun sendLoginMessage() {
         if (myLocation != null) {
             app.backend.sendLoginMessage(group.id, user.id, user.name, myLocation!!.latitude, myLocation!!.longitude)
         }
     }
 
+    // Sends a message that contains the user's location.
     private fun sendMyLocation() {
         if (myLocation != null) {
             app.backend.sendLocationMessage(group.id, user.id, user.name, myLocation!!.latitude, myLocation!!.longitude)
         }
     }
 
+    // Checks if all members in the group are present.
     private fun checkAllMembersPresent(): Boolean {
         for (member in group.memberIDs) {
             if (!locations.containsKey(member)) {
@@ -288,6 +346,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         return true
     }
 
+    // Updates the text at the top of the screen for how many members are left to join.
     private fun updateMembersRemainingText() {
         val membersRemaining = group.memberIDs.count() - locations.keys.count()
         if (membersRemaining == 1) {
@@ -303,36 +362,85 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     }
 
+    // Calculates the distance between two locations.
+    private fun distanceBetween(location1: LatLng, location2: LatLng): Double {
+        val latDiffMeters = location1.latitude - location2.latitude
+        val longDiffMeters = location1.longitude - location2.longitude
+        return Math.sqrt(Math.pow(latDiffMeters, 2.0) + Math.pow(longDiffMeters, 2.0))
+    }
+
+    // Calculates the center point of all group members.
     private fun calculateCenterPoint(): LatLng {
-        var latSum = 0.0
-        var longSum = 0.0
+        var minLat = 0.0
+        var maxLat = 0.0
+        var minLong = 0.0
+        var maxLong = 0.0
         for (location in locations.values) {
-            latSum += location.latitude
-            longSum += location.longitude
+            if (minLat == 0.0) {
+                minLat = location.latitude
+                maxLat = location.latitude
+            }
+            if (minLong == 0.0) {
+                minLong = location.longitude
+                maxLong = location.longitude
+            }
+            if (location.latitude < minLat) {
+                minLat = location.latitude
+            } else if (location.latitude > maxLat) {
+                maxLat = location.latitude
+            }
+            if (location.longitude < minLong) {
+                minLong = location.longitude
+            } else if (location.longitude > maxLong) {
+                maxLong = location.longitude
+            }
         }
-        val latAvg = latSum / locations.values.count()
-        val longAvg = longSum / locations.values.count()
+        val latAvg = (maxLat + minLat) / 2.0
+        val longAvg = (maxLong + minLong) / 2.0
         return LatLng(latAvg, longAvg)
     }
 
+    // Find the closest building to the center point of all group members.
+    private fun findClosestBuilding(location: LatLng): Map.Entry<String, LatLng> {
+        var closest: Map.Entry<String, LatLng>? = null
+        for (building in Constants.MEETING_LOCATIONS) {
+            if (closest == null) {
+                closest = building
+            } else {
+                if (distanceBetween(location, building.value) < distanceBetween(location, closest.value)) {
+                    closest = building
+                }
+            }
+        }
+        return closest!!
+    }
+
+    // Finds a meeting location for all members of the group.
     private fun findMeetingLocation() {
+        findingMeetingLocation = true
         app.backend.stopListening(group.id)
         stopAnimatingText()
+        meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
+        notifyGroupButton.setBackgroundResource(R.drawable.shape_round_button_gray)
         statusText.text = "Calculating..."
-        meetingLocation = calculateCenterPoint()
+        val centerPoint = calculateCenterPoint()
+        meetingLocation = findClosestBuilding(centerPoint)
         var delay = 1000L
         for (location in locations.values) {
             Handler().postDelayed({
-                addLineToMap(location, meetingLocation!!)
+                addLineToMap(location, centerPoint)
             }, delay)
             delay += 500L
         }
         Handler().postDelayed({
-            addMeetingLocationToMap(meetingLocation!!)
+            addLineToMap(centerPoint, meetingLocation!!.value)
+            addMeetingLocationToMap(meetingLocation!!.key, meetingLocation!!.value)
             statusText.text = "Squad Up!"
+            animateButtons()
         }, 1000L + locations.values.count() * 500L)
     }
 
+    // Runs when the device location changes.
     override fun onLocationChanged(location: Location?) {
         if (location != null && !locations.containsKey(user.id)) {
             locations[user.id] = LatLng(location.latitude, location.longitude)
@@ -340,6 +448,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // The receiver to handle any broadcasts from the FirebaseMessageService.
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == LOGIN_MESSAGE) {
@@ -356,39 +465,51 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // Runs when a login message is received.
     private fun onLoginMessageReceived(intent: Intent) {
         val senderID = intent.getStringExtra("senderID")
-        val senderName = intent.getStringExtra("senderName")
-        val latitude = intent.getDoubleExtra("latitude", 0.0)
-        val longitude = intent.getDoubleExtra("longitude", 0.0)
-        if (!locations.containsKey(senderID)) {
-            addLocation(senderID, senderName, LatLng(latitude, longitude))
-            zoomToFit()
-            updateMembersRemainingText()
-            Toast.makeText(baseContext, String.format("%s Has Joined!", senderName), Toast.LENGTH_SHORT).show()
-        }
-        sendMyLocation()
-        if (checkAllMembersPresent()) {
-            findMeetingLocation()
+        if (user.id != senderID) {
+            val senderName = intent.getStringExtra("senderName")
+            val latitude = intent.getDoubleExtra("latitude", 0.0)
+            val longitude = intent.getDoubleExtra("longitude", 0.0)
+            if (!locations.containsKey(senderID)) {
+                addLocation(senderID, senderName, LatLng(latitude, longitude))
+                zoomToFit()
+                updateMembersRemainingText()
+                Toast.makeText(baseContext, String.format("%s Has Joined!", senderName), Toast.LENGTH_SHORT).show()
+            }
+            sendMyLocation()
+            if (checkAllMembersPresent()) {
+                findMeetingLocation()
+            }
         }
     }
 
+    // Runs when a location message is received.
     private fun onLocationMessageReceived(intent: Intent) {
         val senderID = intent.getStringExtra("senderID")
-        val senderName = intent.getStringExtra("senderName")
-        val latitude = intent.getDoubleExtra("latitude", 0.0)
-        val longitude = intent.getDoubleExtra("longitude", 0.0)
-        if (!locations.containsKey(senderID)) {
-            addLocation(senderID, senderName, LatLng(latitude, longitude))
-            zoomToFit()
+        if (user.id != senderID) {
+            val senderName = intent.getStringExtra("senderName")
+            val latitude = intent.getDoubleExtra("latitude", 0.0)
+            val longitude = intent.getDoubleExtra("longitude", 0.0)
+            if (!locations.containsKey(senderID)) {
+                addLocation(senderID, senderName, LatLng(latitude, longitude))
+                zoomToFit()
+                updateMembersRemainingText()
+            }
+            if (checkAllMembersPresent()) {
+                findMeetingLocation()
+            }
         }
     }
 
+    // Runs when a ready request message is received.
     private fun onReadyRequestMessageReceived(intent: Intent) {
         val senderID = intent.getStringExtra("senderID")
-        val senderName = intent.getStringExtra("senderName")
         if (senderID != user.id) {
+            val senderName = intent.getStringExtra("senderName")
             requestedReady = true
+            meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
             AlertDialog.Builder(baseContext)
                     .setTitle(senderName)
                     .setMessage("Hey! Let's go!")
@@ -405,11 +526,12 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // Runs when a ready response message is received.
     private fun onReadyResponseMessageReceived(intent: Intent) {
-        val senderName = intent.getStringExtra("senderName")
         val receiverID = intent.getStringExtra("receiverID")
-        val response = intent.getBooleanExtra("response", false)
         if (receiverID == user.id) {
+            val senderName = intent.getStringExtra("senderName")
+            val response = intent.getBooleanExtra("response", false)
             readyResponses.add(response)
             val yesNo = if (response) "Yes" else "No"
             Toast.makeText(baseContext, String.format("%s Responded %s", senderName, yesNo), Toast.LENGTH_SHORT).show()
@@ -421,10 +543,12 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // Runs when a ready decision message is received.
     private fun onReadyDecisionMessageReceived(intent: Intent) {
         val decision = intent.getBooleanExtra("decision", false)
         readyResponses.clear()
         requestedReady = false
+        meetNowButton.setBackgroundResource(R.drawable.shape_round_button_blue)
         if (decision) {
             findMeetingLocation()
         } else {
@@ -432,19 +556,31 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
-
+    // Runs when the meet now button is pressed.
     private fun onMeetNowButtonClick() {
-        if (!requestedReady && locations.count() > 1) {
+        if (!requestedReady && !findingMeetingLocation && locations.count() > 1) {
             readyResponses = mutableListOf()
-            requestedReady = true
             app.backend.sendReadyRequestMessage(group.id, user.id, user.name)
+            requestedReady = true
+            meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
         }
     }
 
+    // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
-        app.backend.sendNotification(group.id, "${user.name} (SquadUp)", "Hey, let's meet up!")
+        if (!findingMeetingLocation) {
+            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", "Hey, let's meet up!")
+        }
     }
 
+    private fun onContinueButtonClick() {
+        showScreen(MeetingLocationViewActivity::class.java) {
+            intent: Intent ->
+            intent.putExtra("meetingLocation", meetingLocation!!.key)
+        }
+    }
+
+    // Animates the text to fade in and fade out.
     private val animateText = object : Runnable {
         override fun run() {
             statusText.animate().alpha(0f).duration = 1000
@@ -455,24 +591,43 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // Start animating the status text.
     private fun startAnimatingText() {
         animationHandler.post(animateText)
         statusText.alpha = 1f
     }
 
+    // Stop animating the status text.
     private fun stopAnimatingText() {
         animationHandler.removeCallbacks(animateText)
         statusText.alpha = 1f
     }
 
+    // Animate the buttons to swap the original two with the continue button.
+    private fun animateButtons() {
+        lowerButtonLayout.animate()
+                .setInterpolator(DecelerateInterpolator())
+                .translationY(300f)
+                .duration = 500
+        Handler().postDelayed({
+            continueButtonFrame.animate()
+                    .setInterpolator(AccelerateInterpolator())
+                    .translationY(0f)
+                    .duration = 500
+        }, 500)
+    }
+
+    // Runs when the location manager status changes.
     override fun onStatusChanged(status: String?, code: Int, bundle: Bundle?) {
 
     }
 
+    // Runs when the location provider is enabled.
     override fun onProviderEnabled(provider: String?) {
 
     }
 
+    // Runs when the location provider is disabled.
     override fun onProviderDisabled(provider: String?) {
 
     }

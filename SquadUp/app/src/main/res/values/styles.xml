@@ -1,9 +1,9 @@
 <resources>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
-        <item name="colorAccent">@color/color_accent</item>
+        <item name="colorPrimary">@color/medium_blue</item>
+        <item name="colorPrimaryDark">@color/dark_blue</item>
+        <item name="colorAccent">@color/medium_orange</item>
     </style>
 
     <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.ActionBar">
@@ -11,7 +11,7 @@
         <item name="android:textColorPrimaryInverse">#000000</item>
         <item name="android:textColorSecondary">#FFFFFF</item>
         <item name="actionMenuTextColor">#FFFFFF</item>
-        <item name="android:background">@color/color_primary</item>
+        <item name="android:background">@color/medium_blue</item>
     </style>
 
 </resources>

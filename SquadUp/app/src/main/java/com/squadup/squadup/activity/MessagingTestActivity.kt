@@ -97,7 +97,10 @@ class MessagingTestActivity : BaseActivity() {
         }
         sendLoginButton.setOnClickListener {
             app.backend.sendLoginMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
+        }
+        sendLoginButton.setOnLongClickListener {
             showScreen(MeetUpActivity::class.java)
+            true
         }
         sendLocationButton.setOnClickListener {
             app.backend.sendLocationMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)

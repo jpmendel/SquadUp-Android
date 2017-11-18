@@ -18,7 +18,7 @@
             android:resource="@android:drawable/ic_menu_myplaces" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/color_primary" />
+            android:resource="@color/medium_blue" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
@@ -40,6 +40,7 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -51,7 +52,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MeetUpActivity"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
+        <activity android:name=".activity.MeetingLocationViewActivity"></activity>
     </application>
 
 </manifest>

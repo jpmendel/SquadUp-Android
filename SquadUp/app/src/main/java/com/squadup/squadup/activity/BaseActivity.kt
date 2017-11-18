@@ -3,6 +3,7 @@ package com.squadup.squadup.activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.DisplayMetrics
 import android.view.MenuItem
 import com.squadup.squadup.R
 import com.squadup.squadup.manager.ApplicationManager
@@ -25,11 +26,23 @@ open class BaseActivity : AppCompatActivity() {
     // The application manager to manage global data.
     lateinit var app: ApplicationManager
 
+    var screenWidth: Float = 0f
+
+    var screenHeight: Float = 0f
+
     // Runs when the activity is created.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as ApplicationManager
         app.setup()
+        getScreenDimensions()
+    }
+
+    private fun getScreenDimensions() {
+        val displayMetrics = DisplayMetrics()
+        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        screenWidth = displayMetrics.widthPixels.toFloat()
+        screenHeight = displayMetrics.heightPixels.toFloat()
     }
 
     protected open fun initializeViews() {
