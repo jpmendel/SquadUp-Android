@@ -15,6 +15,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.squadup.squadup.R
+import com.squadup.squadup.data.User
+import com.squadup.squadup.manager.BackendManager
 
 
 class LoginActivity : BaseActivity() {
@@ -47,15 +49,17 @@ class LoginActivity : BaseActivity() {
     }
 
     fun updateUI(account: GoogleSignInAccount?){
-        //TODO: If User account exists: Then move to next activity. Otherwise, display Google Login Button.
         if (account != null) {
             findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.GONE)
-            findViewById<Button>(R.id.signOutButton).visibility = View.VISIBLE
-            Toast.makeText(this,
-                    "User has logged in!", Toast.LENGTH_SHORT).show()
+//            findViewById<Button>(R.id.signOutButton).visibility = View.VISIBLE
             Log.i("Login", "User Name " + account.displayName)
             Log.i("Login", "Email " + account.email)
             Log.i("Login", "Account ID " + account.id)
+
+            setUserGlobal(account)
+            Handler().postDelayed({
+                showScreen(MessagingTestActivity::class.java)
+            }, 1000)
         } else {
             Toast.makeText(this,
                     "User is not logged in!", Toast.LENGTH_SHORT).show()
@@ -68,16 +72,17 @@ class LoginActivity : BaseActivity() {
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
-    fun signOut(view: View){
-        Log.i("Login", "Sign out Function")
-        mGoogleSignInClient.signOut()
-                .addOnCompleteListener(this) {
-                    findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.VISIBLE)
-                    findViewById<Button>(R.id.signOutButton).setVisibility(View.GONE)
-                }
-        Toast.makeText(this,
-                "Successfully logged out!!", Toast.LENGTH_SHORT).show()
-    }
+    //TODO: Hold onto this code so Steve can add it in the other screen.
+//    fun signOut(view: View){
+//        Log.i("Login", "Sign out Function")
+//        mGoogleSignInClient.signOut()
+//                .addOnCompleteListener(this) {
+//                    findViewById<SignInButton>(R.id.sign_in_button).setVisibility(View.VISIBLE)
+//                    findViewById<Button>(R.id.signOutButton).setVisibility(View.GONE)
+//                }
+//        Toast.makeText(this,
+//                "Successfully logged out!!", Toast.LENGTH_SHORT).show()
+//    }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -91,11 +96,28 @@ class LoginActivity : BaseActivity() {
 
             // Signed in successfully, show authenticated UI.
             updateUI(account)
-            Handler().postDelayed({
-                showScreen(MessagingTestActivity::class.java)
-            }, 1000)
         }
     }
+
+    //
+    fun setUserGlobal(account: GoogleSignInAccount?){
+        val userID = account!!.email
+        app.backend.getUserRecord(userID!!) {
+            user: User? ->
+                if (user == null) {
+                    //create the user object, send it to the backend and application manager
+                    var newUser = User(account.email!!, account.displayName!!)
+                    app.backend.createUserRecord(newUser)
+                    app.user = newUser
+                }
+                else{
+                    //send the user to the application manager
+                    app.user = user!!
+                }
+        }
+
+    }
+
 
 
 }
