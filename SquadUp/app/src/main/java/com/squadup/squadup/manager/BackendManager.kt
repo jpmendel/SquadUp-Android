@@ -9,6 +9,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.firebase.messaging.FirebaseMessaging
 import com.squadup.squadup.data.Constants
+import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.ServerData
 import com.squadup.squadup.data.User
 import com.squadup.squadup.service.FirebaseIDService
@@ -181,6 +182,82 @@ class BackendManager(context: Context?) {
             Log.i("BackendManager", "Response: " + response)
             if (response != null) {
                 callback(buildUserFromJSON(response))
+            } else {
+                callback(null)
+            }
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+            callback(null)
+        })
+    }
+
+    // Build a JSON object from a Group object.
+    private fun buildJSONFromGroup(group: Group): JSONObject {
+        val groupObj = JSONObject()
+        groupObj.put("id", group.id)
+        groupObj.put("name", group.name)
+        val memberArray = JSONArray()
+        for (member in group.members) {
+            memberArray.put(member)
+        }
+        groupObj.put("members", memberArray)
+        return groupObj
+    }
+
+    // Build a User object from a JSON object.
+    private fun buildGroupFromJSON(json: JSONObject): Group {
+        val id = json.getString("id")
+        val name = json.getString("name")
+        val group = Group(id, name)
+        val members = json.getJSONArray("members")
+        for (i in 0 until members.length()) {
+            group.members.add(members[i] as String)
+        }
+        return group
+    }
+
+    // Create a record for a User in Google App Engine.
+    fun createGroupRecord(group: Group) {
+        val json = JSONObject()
+        json.put("dataType", GROUP)
+        json.put("requestType", CREATE)
+        json.put("content", buildJSONFromGroup(group))
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response?.getString("content"))
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    // Delete a record for a User in Google App Engine.
+    fun deleteGroupRecord(groupID: String) {
+        val json = JSONObject()
+        json.put("dataType", GROUP)
+        json.put("requestType", DELETE)
+        json.put("content", groupID)
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response?.getString("content"))
+        }, {
+            error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    // Retrieve a record for a User in Google App Engine.
+    fun getGroupRecord(groupID: String, callback: (group: Group?) -> Unit) {
+        val json = JSONObject()
+        json.put("dataType", GROUP)
+        json.put("requestType", READ)
+        json.put("content", groupID)
+        sendPostRequest(DATASTORE_SERVER_URL, json, {
+            response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+            if (response != null) {
+                callback(buildGroupFromJSON(response))
             } else {
                 callback(null)
             }
