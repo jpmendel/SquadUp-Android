@@ -1,6 +1,7 @@
 package com.squadup.squadup.manager
 
 import android.app.Application
+import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 
 /**
@@ -12,6 +13,8 @@ class ApplicationManager : Application() {
     lateinit var backend: BackendManager
 
     var user: User? = null
+
+    var group: Group? = null
 
     // Sets up all the initial data for the application.
     fun setup() {
