@@ -30,7 +30,7 @@ class GroupViewActivity : BaseActivity() {
         //set up recycler view for members of group
         RecyclerViewMembers = findViewById(R.id.RecyclerViewGroupMembers)
         layoutManager = LinearLayoutManager(this) //set context for linear layout manager
-        memberAdapter = MemberAdapter(ArrayList(app.group!!.members))
+        memberAdapter = MemberAdapter(ArrayList(app.group!!.memberIDs))
         RecyclerViewMembers.adapter = memberAdapter
         RecyclerViewMembers.layoutManager = layoutManager
         RecyclerViewMembers.adapter.notifyDataSetChanged()
