@@ -53,7 +53,12 @@
         <activity
             android:name=".activity.MeetUpActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activity.MeetingLocationViewActivity"></activity>
+        <activity
+            android:name=".activity.MeetingLocationViewActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".activity.GroupViewActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
