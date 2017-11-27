@@ -14,11 +14,13 @@ class ApplicationManager : Application() {
 
     var user: User? = null
 
-    var group: Group? = null
+    var group: Group = Group("GROUP01", "Dream Team")
+
 
     // Sets up all the initial data for the application.
     fun setup() {
         backend = BackendManager(applicationContext)
+        group.memberIDs = mutableListOf("Jason", "John", "Jackson")
     }
 
 }

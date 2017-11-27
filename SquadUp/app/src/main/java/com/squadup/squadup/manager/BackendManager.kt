@@ -234,10 +234,17 @@ class BackendManager(context: Context?) {
         for (i in 0 until friends.length()) {
             user.friends.add(friends[i] as String)
         }
-        val groups = json.getJSONArray("groupIDs")
-        for (i in 0 until groups.length()) {
-            user.groupIDs.add(groups[i] as String)
+        var groups = json.get("groupIDs")
+        if (groups != "[]"){
+            groups = json.getJSONArray("groupIDs")
+            for (i in 0 until groups.length()) {
+                user.groupIDs.add(groups[i] as String)
+            }
         }
+//        val groups = json.getJSONArray("groupIDs")
+//        for (i in 0 until groups.length()) {
+//            user.groupIDs.add(groups[i] as String)
+//        }
         return user
     }
 
