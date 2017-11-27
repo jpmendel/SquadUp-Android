@@ -26,7 +26,7 @@ class LaunchActivity : BaseActivity() {
         }, 2000)
     }
 
-    private fun initializeViews() {
+    override fun initializeViews() {
         splashImage = findViewById(R.id.splash_image)
     }
 

@@ -6,6 +6,8 @@ class Group(id: String, name: String) {
 
     var name: String = name
 
-    var members: MutableList<String> = mutableListOf()
+    var memberIDs: MutableList<String> = mutableListOf()
+
+    var members: MutableList<User> = mutableListOf()
 
 }

@@ -8,6 +8,8 @@ class User(id: String, name: String) {
 
     var friends: MutableList<String> = mutableListOf()
 
-    var groups: MutableList<String> = mutableListOf()
+    var groupIDs: MutableList<String> = mutableListOf()
+
+    var groups: MutableList<Group> = mutableListOf()
 
 }

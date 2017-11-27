@@ -36,34 +36,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="80dp"
+            android:layout_marginTop="60dp"
             android:text="No New Messages"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
 
         <Button
-            android:id="@+id/send_button"
+            android:id="@+id/send_text_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:padding="30dp"
-            android:text="Send\nMessage" />
+            android:text="Send\nText"
+            android:translationY="20dp" />
 
         <Button
-            android:id="@+id/start_listening_button"
+            android:id="@+id/send_login_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
+            android:layout_centerHorizontal="false"
             android:layout_centerVertical="true"
             android:layout_marginStart="20dp"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Start\nListening" />
+            android:text="Send\nLogin"
+            android:translationY="20dp" />
 
         <Button
-            android:id="@+id/stop_listening_button"
+            android:id="@+id/send_location_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -71,19 +73,43 @@
             android:layout_marginEnd="20dp"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Stop\nListening" />
+            android:text="Send\nLocation"
+            android:translationY="20dp" />
+
+        <Button
+            android:id="@+id/start_listening_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="80dp"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:text="Start\nListening"
+            android:translationY="-100dp" />
+
+        <Button
+            android:id="@+id/stop_listening_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="80dp"
+            android:paddingBottom="20dp"
+            android:paddingTop="20dp"
+            android:text="Stop\nListening"
+            android:translationY="-100dp" />
 
         <Button
             android:id="@+id/notification_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/send_button"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="false"
-            android:layout_marginTop="30dp"
+            android:layout_centerVertical="true"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Send Notification" />
+            android:text="Send Notification"
+            android:translationY="140dp" />
 
         <TextView
             android:id="@+id/listening_text"
