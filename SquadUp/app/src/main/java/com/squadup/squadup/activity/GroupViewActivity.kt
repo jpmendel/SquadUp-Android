@@ -24,13 +24,13 @@ class GroupViewActivity : BaseActivity() {
         setContentView(R.layout.activity_group_view)
 
         //establish the name of the group
-        var TextView = findViewById<TextView>(R.id.textViewGroupName)
-        TextView.text = app.group!!.name
+        val textView = findViewById<TextView>(R.id.textViewGroupName)
+        textView.text = app.group?.name ?: "GroupName"
 
         //set up recycler view for members of group
         RecyclerViewMembers = findViewById(R.id.RecyclerViewGroupMembers)
         layoutManager = LinearLayoutManager(this) //set context for linear layout manager
-        memberAdapter = MemberAdapter(ArrayList(app.group!!.members))
+        memberAdapter = MemberAdapter(ArrayList(app.group!!.memberIDs))
         RecyclerViewMembers.adapter = memberAdapter
         RecyclerViewMembers.layoutManager = layoutManager
         RecyclerViewMembers.adapter.notifyDataSetChanged()
@@ -40,7 +40,7 @@ class GroupViewActivity : BaseActivity() {
     fun meetUp(view: View){
         Handler().postDelayed({
             //TODO: Change this screen to the meet-up screen once master has been updated.
-            presentScreen(MessagingTestActivity::class.java)
+            presentScreen(MeetUpActivity::class.java)
         }, 0)
     }
 

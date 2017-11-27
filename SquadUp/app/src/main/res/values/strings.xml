@@ -2,5 +2,5 @@
     <string name="app_name">SquadUp</string>
     <string name="tab_text_1">Groups</string>
     <string name="tab_text_2">Friends</string>
-
+    <string name="title_activity_meet_up">Map</string>
 </resources>

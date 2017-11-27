@@ -3,13 +3,14 @@
     package="com.squadup.squadup">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:name=".manager.ApplicationManager"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/launcher_squadup"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/launcher_squadup"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
@@ -17,7 +18,10 @@
             android:resource="@android:drawable/ic_menu_myplaces" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorPrimary" />
+            android:resource="@color/medium_blue" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
 
         <service android:name=".service.FirebaseIDService">
             <intent-filter>
@@ -46,7 +50,15 @@
         <activity
             android:name=".activity.MessagingTestActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".activity.GroupViewActivity"></activity>
+        <activity
+            android:name=".activity.MeetUpActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.MeetingLocationViewActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".activity.GroupViewActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
