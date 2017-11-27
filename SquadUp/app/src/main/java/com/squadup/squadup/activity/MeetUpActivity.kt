@@ -8,7 +8,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
@@ -36,8 +35,14 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The Google Map used to display everyone's location.
     private lateinit var map: GoogleMap
 
+    // The frame to hold the Google Map.
+    private lateinit var mapFrame: FrameLayout
+
     // The text displaying the status at the top of the screen.
     private lateinit var statusText: TextView
+
+    // The image displayed while the GPS is acquiring the user's location.
+    private lateinit var loadingImage: ImageView
 
     // FOR TESTING PURPOSES ONLY.
     private lateinit var testButton: Button
@@ -94,7 +99,10 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private var lastMarker: Marker? = null
 
     // Handles the animation of the status text.
-    private val animationHandler: Handler = Handler()
+    private val statusTextAnimationHandler: Handler = Handler()
+
+    // Handles the animation of the loading image.
+    private val loadingImageAnimationHandler: Handler = Handler()
 
     // Runs when the activity is loaded and created.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,7 +126,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     override fun initializeViews() {
         super.initializeViews()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mapFrame = findViewById(R.id.map_frame)
         statusText = findViewById(R.id.status_text)
+        loadingImage = findViewById(R.id.loading_image)
         testButton = findViewById(R.id.test_button)
         lowerButtonLayout = findViewById(R.id.lower_button_layout)
         meetNowButton = findViewById(R.id.meet_now_button)
@@ -197,9 +207,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         initializeMap()
         if (PermissionManager.checkLocationPermission(this)) {
             initializeLocationManager()
-            setInitialRegion()
-            initializeBroadcastReceiver()
-            sendLoginMessage()
         } else {
             PermissionManager.requestLocationPermission(this)
         }
@@ -232,11 +239,13 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private fun initializeLocationManager() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (PermissionManager.checkLocationPermission(this)) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-            myLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (myLocation != null) {
-                addLocation(user.id, user.name, LatLng(myLocation!!.latitude, myLocation!!.longitude))
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, null)
+            } else {
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, null)
             }
+            startAnimatingLoadingImage()
+            statusText.text = "Acquiring..."
         }
     }
 
@@ -245,10 +254,22 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         if (requestCode == PermissionManager.PERMISSION_REQUEST_CODE_LOCATION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initializeLocationManager()
-                setInitialRegion()
-                initializeBroadcastReceiver()
-                sendLoginMessage()
             }
+        }
+    }
+
+    // Runs when the device location changes.
+    override fun onLocationChanged(location: Location?) {
+        if (location != null) {
+            myLocation = location
+            addLocation(user.id, user.name, LatLng(location.latitude, location.longitude))
+            setInitialRegion()
+            initializeBroadcastReceiver()
+            sendLoginMessage()
+            stopAnimatingLoadingImage()
+            animateScreenIn()
+            statusText.text = "Waiting For Others..."
+            testButton.visibility = View.VISIBLE
         }
     }
 
@@ -377,11 +398,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     }
 
-    // Calculates the distance between two locations.
+    // Calculates the distance between two locations in meters.
     private fun distanceBetween(location1: LatLng, location2: LatLng): Double {
         val latDiffMeters = location1.latitude - location2.latitude
         val longDiffMeters = location1.longitude - location2.longitude
-        return Math.sqrt(Math.pow(latDiffMeters, 2.0) + Math.pow(longDiffMeters, 2.0))
+        return Math.sqrt(Math.pow(latDiffMeters, 2.0) + Math.pow(longDiffMeters, 2.0)) * Constants.METERS_PER_DEGREE
     }
 
     // Calculates the center point of all group members.
@@ -451,16 +472,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             addLineToMap(centerPoint, meetingLocation!!.value)
             addMeetingLocationToMap(meetingLocation!!.key, meetingLocation!!.value)
             statusText.text = "Squad Up!"
-            animateButtons()
+            animateSwitchButtons()
         }, 1000L + locations.values.count() * 500L)
-    }
-
-    // Runs when the device location changes.
-    override fun onLocationChanged(location: Location?) {
-        if (location != null && !locations.containsKey(user.id)) {
-            locations[user.id] = LatLng(location.latitude, location.longitude)
-            myLocation = location
-        }
     }
 
     // The receiver to handle any broadcasts from the FirebaseMessageService.
@@ -602,24 +615,64 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             Handler().postDelayed({
                 statusText.animate().alpha(1f).duration = 1000
             }, 1000)
-            animationHandler.postDelayed(this, 2000)
+            statusTextAnimationHandler.postDelayed(this, 2000)
         }
     }
 
     // Start animating the status text.
     private fun startAnimatingText() {
-        animationHandler.post(animateText)
+        statusTextAnimationHandler.post(animateText)
         statusText.alpha = 1f
     }
 
     // Stop animating the status text.
     private fun stopAnimatingText() {
-        animationHandler.removeCallbacks(animateText)
+        statusTextAnimationHandler.removeCallbacks(animateText)
         statusText.alpha = 1f
     }
 
+    private val animateLoadingImage = object : Runnable {
+        override fun run() {
+            loadingImage.animate()
+                    .scaleX(0.9f)
+                    .scaleY(1.1f)
+                    .duration = 500
+            Handler().postDelayed({
+                loadingImage.animate()
+                        .scaleX(1.0f)
+                        .scaleY(1.0f)
+                        .duration = 500
+            }, 500)
+            Handler().postDelayed({
+                statusTextAnimationHandler.post(this)
+            }, 1000)
+        }
+    }
+
+    private fun startAnimatingLoadingImage() {
+        loadingImageAnimationHandler.post(animateLoadingImage)
+        loadingImage.alpha = 1f
+    }
+
+    private fun stopAnimatingLoadingImage() {
+        loadingImageAnimationHandler.removeCallbacks(animateLoadingImage)
+        loadingImage.alpha = 0f
+    }
+
+    // Animates the lower button layout onto the screen.
+    private fun animateScreenIn() {
+        mapFrame.animate()
+                .setInterpolator(DecelerateInterpolator())
+                .translationX(0f)
+                .duration = 250
+        lowerButtonLayout.animate()
+                .setInterpolator(DecelerateInterpolator())
+                .translationY(0f)
+                .duration = 500
+    }
+
     // Animate the buttons to swap the original two with the continue button.
-    private fun animateButtons() {
+    private fun animateSwitchButtons() {
         lowerButtonLayout.animate()
                 .setInterpolator(DecelerateInterpolator())
                 .translationY(300f)
@@ -646,4 +699,5 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     override fun onProviderDisabled(provider: String?) {
 
     }
+
 }

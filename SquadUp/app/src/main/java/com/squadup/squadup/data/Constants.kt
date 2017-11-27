@@ -6,6 +6,8 @@ class Constants {
 
     companion object {
 
+        val METERS_PER_DEGREE = 111319.9
+
         val MEETING_LOCATIONS = mapOf(
                 Pair("MacDonald Commons", LatLng(40.95231, -76.880407)),
                 Pair("Academic West", LatLng(40.953678, -76.881673)),
