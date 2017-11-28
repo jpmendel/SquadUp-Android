@@ -11,11 +11,8 @@ import com.google.firebase.iid.FirebaseInstanceIdService
 class FirebaseIDService : FirebaseInstanceIdService() {
 
     companion object {
-
         // Static function to get the token for the instance of the app being used.
-        fun getToken(): String? {
-            return FirebaseInstanceId.getInstance().token
-        }
+        fun getToken(): String? = FirebaseInstanceId.getInstance().token
     }
 
     // Runs whenever Firebase refreshes the user's token.
@@ -27,7 +24,7 @@ class FirebaseIDService : FirebaseInstanceIdService() {
         }
     }
 
-    // Send your token to the server (?)
+    // This function should update the user object in the database with the new token.
     private fun sendRegistrationToServer(token: String) {
 
     }

@@ -18,7 +18,6 @@ class MeetingLocationViewActivity : BaseActivity() {
         setContentView(R.layout.activity_meeting_location_view)
         initializeViews()
         setupButtons()
-
     }
 
     override fun initializeViews() {

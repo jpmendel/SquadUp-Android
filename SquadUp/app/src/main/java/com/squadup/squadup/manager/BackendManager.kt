@@ -21,25 +21,33 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * A manager class to handle any data being sent to or received by the Google App Engine backend.
- * Also handles sending of Firebase messages.
+ * A manager class to handle any data being sent to or received by the Cloud Firestore backend.
+ * Also handles sending of Firebase Cloud messages.
  */
 class BackendManager(context: Context?) {
 
     // URL for the Firebase messaging server.
     private val MESSAGING_SERVER_URL = "https://fcm.googleapis.com/fcm/send"
 
-    private var firestoreDatabase: FirebaseFirestore = FirebaseFirestore.getInstance()
+    // The name for the collection of user records in the Firestore database.
+    private val USER_COLLECTION = "users"
+
+    // The name for the collection of group records in the Firestore database.
+    private val GROUP_COLLECTION = "groups"
+
+    // The reference for the Firestore database.
+    private var firestoreDatabase = FirebaseFirestore.getInstance()
 
     // A request queue to handle HTTP requests made by the app.
-    private var httpRequestQueue: RequestQueue = Volley.newRequestQueue(context)
+    private var httpRequestQueue = Volley.newRequestQueue(context)
 
     // Sends a JSON post request to a server address.
     private fun sendPostRequest(address: String, data: JSONObject,
                                 responseHandler: (response: JSONObject?) -> Unit,
                                 errorHandler: (error: VolleyError?) -> Unit) {
+        val postRequest: JsonObjectRequest
         if (address == MESSAGING_SERVER_URL) {
-            val postRequest = object : JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler) {
+            postRequest = object : JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler) {
                 override fun getHeaders(): MutableMap<String, String> {
                     val params = mutableMapOf<String, String>()
                     params.put("Content-Type", "application/json")
@@ -47,11 +55,10 @@ class BackendManager(context: Context?) {
                     return params
                 }
             }
-            httpRequestQueue.add(postRequest)
         } else {
-            val postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
-            httpRequestQueue.add(postRequest)
+            postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
         }
+        httpRequestQueue.add(postRequest)
     }
 
     // Start listening to a topic. Any messages sent to the same topic will be received.
@@ -66,7 +73,7 @@ class BackendManager(context: Context?) {
         Log.i("BackendManager", "Stopped listening to: " + topic)
     }
 
-    // Send a message to a certain topic. Any users listening to that topic will receive the message.
+    // Send a text message to a certain topic. Any users listening to that topic will receive the message.
     fun sendTextMessage(topic: String, senderID: String, senderName: String, text: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -86,6 +93,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a login message to users subscribed to a certain topic.
     fun sendLoginMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -106,6 +114,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a location message to users subscribed to a certain topic.
     fun sendLocationMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -126,6 +135,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready request message to users subscribed to a certain topic.
     fun sendReadyRequestMessage(topic: String, senderID: String, senderName: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -144,6 +154,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready response message to users subscribed to a certain topic.
     fun sendReadyResponseMessage(topic: String, senderID: String, senderName: String, receiverID: String, response: Boolean) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -164,6 +175,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready decision message to users subscribed to a certain topic.
     fun sendReadyDecisionMessage(topic: String, senderID: String, senderName: String, decision: Boolean) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -183,6 +195,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a push notification to users subscribed to a certain topic.
     fun sendNotification(topic: String, title: String, body: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -200,6 +213,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Builds a Firestore document from a user object.
     private fun buildDocumentFromUser(user: User): MutableMap<String, Any> {
         val userData = mutableMapOf<String, Any>()
         userData["id"] = user.id
@@ -209,6 +223,7 @@ class BackendManager(context: Context?) {
         return userData
     }
 
+    // Builds a user object from a Firestore document.
     private fun buildUserFromDocument(document: MutableMap<String, Any>): User {
         val id = document["id"] as String
         val name = document["name"] as String
@@ -228,9 +243,10 @@ class BackendManager(context: Context?) {
         return user
     }
 
+    // Creates or updates a user record in the Firestore database backend.
     fun createUserRecord(user: User) {
         firestoreDatabase
-                .collection("users")
+                .collection(USER_COLLECTION)
                 .document(user.id)
                 .set(buildDocumentFromUser(user))
                 .addOnCompleteListener {
@@ -243,9 +259,10 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Deletes a user record in the Firestore database backend.
     fun deleteUserRecord(userID: String) {
         firestoreDatabase
-                .collection("users")
+                .collection(USER_COLLECTION)
                 .document(userID)
                 .delete()
                 .addOnCompleteListener {
@@ -258,9 +275,10 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Retrieves a user record from the Firestore database backend.
     fun getUserRecord(userID: String, callback: (user: User?) -> Unit) {
         firestoreDatabase
-                .collection("users")
+                .collection(USER_COLLECTION)
                 .document(userID)
                 .get()
                 .addOnCompleteListener{
@@ -278,6 +296,7 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Builds a Firestore document from a group object.
     private fun buildDocumentFromGroup(group: Group): MutableMap<String, Any> {
         val groupData = mutableMapOf<String, Any>()
         groupData["id"] = group.id
@@ -286,6 +305,7 @@ class BackendManager(context: Context?) {
         return groupData
     }
 
+    // Builds a group object from a Firestore document.
     private fun buildGroupFromDocument(document: MutableMap<String, Any>): Group {
         val id = document["id"] as String
         val name = document["name"] as String
@@ -299,9 +319,10 @@ class BackendManager(context: Context?) {
         return group
     }
 
+    // Creates or updates a user record in the Firestore database backend.
     fun createGroupRecord(group: Group) {
         firestoreDatabase
-                .collection("groups")
+                .collection(GROUP_COLLECTION)
                 .document(group.id)
                 .set(buildDocumentFromGroup(group))
                 .addOnCompleteListener {
@@ -314,9 +335,10 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Deletes a user record in the Firestore database backend.
     fun deleteGroupRecord(groupID: String) {
         firestoreDatabase
-                .collection("groups")
+                .collection(GROUP_COLLECTION)
                 .document(groupID)
                 .delete()
                 .addOnCompleteListener {
@@ -329,9 +351,10 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Retrieves a user record from the Firestore database backend.
     fun getGroupRecord(groupID: String, callback: (group: Group?) -> Unit) {
         firestoreDatabase
-                .collection("groups")
+                .collection(GROUP_COLLECTION)
                 .document(groupID)
                 .get()
                 .addOnCompleteListener{
