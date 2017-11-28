@@ -3,13 +3,11 @@ package com.squadup.squadup.activity
 /**
  * Created by StephenHaberle on 11/27/17.
  */
-
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.squadup.squadup.R
 
 
 /**
@@ -22,6 +20,7 @@ import com.squadup.squadup.R
  */
 class GroupsFragment : Fragment() {
 
+    // TODO: Rename and change types of parameters
     private var mParam1: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +36,7 @@ class GroupsFragment : Fragment() {
     }
 
     companion object {
+        // TODO: Rename parameter arguments, choose names that match
         // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
         private val ARG_ITEM_NUMBER = "item_number"
 
@@ -47,6 +47,7 @@ class GroupsFragment : Fragment() {
          * @param param1 Parameter 1.
          * @return A new instance of fragment GroupsFragment.
          */
+        // TODO: Rename and change types and number of parameters
         fun newInstance(): GroupsFragment {
             val fragment = GroupsFragment()
             return fragment

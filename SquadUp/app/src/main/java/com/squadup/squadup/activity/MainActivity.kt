@@ -4,7 +4,6 @@ import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import com.squadup.squadup.R
 
 /**
  * Created by StephenHaberle on 11/27/17.
