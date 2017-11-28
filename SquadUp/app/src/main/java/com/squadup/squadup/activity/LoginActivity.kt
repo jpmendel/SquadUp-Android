@@ -58,7 +58,7 @@ class LoginActivity : BaseActivity() {
 
             setUserGlobal(account)
             Handler().postDelayed({
-                showScreen(GroupViewActivity::class.java)
+                showScreen(MessagingTestActivity::class.java)
             }, 1000)
         } else {
             Toast.makeText(this,

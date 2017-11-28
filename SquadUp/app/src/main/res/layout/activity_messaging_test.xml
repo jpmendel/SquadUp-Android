@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="60dp"
-            android:text="No New Messages"
+            android:text="No User Queried"
             android:textAlignment="center"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
@@ -49,7 +49,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:padding="30dp"
-            android:text="Send\nText"
+            android:text="Get\nUser"
             android:translationY="20dp" />
 
         <Button
@@ -61,7 +61,7 @@
             android:layout_marginStart="20dp"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Send\nLogin"
+            android:text="Create\nUser"
             android:translationY="20dp" />
 
         <Button
@@ -73,7 +73,7 @@
             android:layout_marginEnd="20dp"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Send\nLocation"
+            android:text="Delete\nUser"
             android:translationY="20dp" />
 
         <Button
@@ -108,7 +108,7 @@
             android:layout_centerVertical="true"
             android:paddingBottom="20dp"
             android:paddingTop="20dp"
-            android:text="Send Notification"
+            android:text="Meet Up Screen"
             android:translationY="140dp" />
 
         <TextView
