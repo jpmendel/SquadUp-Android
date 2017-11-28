@@ -664,7 +664,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         mapFrame.animate()
                 .setInterpolator(DecelerateInterpolator())
                 .translationX(0f)
-                .duration = 250
+                .duration = 300
         lowerButtonLayout.animate()
                 .setInterpolator(DecelerateInterpolator())
                 .translationY(0f)

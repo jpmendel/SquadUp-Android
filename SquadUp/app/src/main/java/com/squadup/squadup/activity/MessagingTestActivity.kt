@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.widget.Toast
+import com.squadup.squadup.data.User
 
 class MessagingTestActivity : BaseActivity() {
 
@@ -106,7 +107,7 @@ class MessagingTestActivity : BaseActivity() {
             app.backend.sendLocationMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
         }
         notificationButton.setOnClickListener {
-            app.backend.sendNotification("messages", "SquadUp", "Hey, lets meet up!")
+            app.backend.createUserRecordFirestore(User("jacob@email.com", "Jacob Mendelowitz"))
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")

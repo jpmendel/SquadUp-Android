@@ -7,6 +7,9 @@ import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.Group
@@ -37,6 +40,8 @@ class BackendManager(context: Context?) {
     private val CREATE = 1
     private val DELETE = 2
     private val READ = 3
+
+    private var firestoreDatabase: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     // A request queue to handle HTTP requests made by the app.
     private var httpRequestQueue: RequestQueue = Volley.newRequestQueue(context)
@@ -239,6 +244,131 @@ class BackendManager(context: Context?) {
             user.groupIDs.add(groups[i] as String)
         }
         return user
+    }
+
+    private fun buildDocumentFromUser(user: User): MutableMap<String, Any> {
+        val userData = mutableMapOf<String, Any>()
+        userData["id"] = user.id
+        userData["name"] = user.name
+        userData["friends"] = user.friends.toList()
+        userData["groupIDs"] = user.groupIDs.toList()
+        return userData
+    }
+
+    private fun buildUserFromDocument(document: MutableMap<String, Any>): User {
+        val id = document["id"] as String
+        val name = document["name"] as String
+        val user = User(id, name)
+        val friends = document["friends"] as? List<String>
+        if (friends != null) {
+            for (i in 0 until friends.count()) {
+                user.friends.add(friends[i])
+            }
+        }
+        val groups = document["groupIDs"] as? List<String>
+        if (groups != null) {
+            for (i in 0 until groups.count()) {
+                user.groupIDs.add(groups[i])
+            }
+        }
+        return user
+    }
+
+    private fun buildDocumentFromGroup(group: Group): MutableMap<String, Any> {
+        val groupData = mutableMapOf<String, Any>()
+        groupData["id"] = group.id
+        groupData["name"] = group.name
+        groupData["members"] = group.memberIDs.toList()
+        return groupData
+    }
+
+    private fun buildGroupFromDocument(document: MutableMap<String, Any>): Group {
+        val id = document["id"] as String
+        val name = document["name"] as String
+        val group = Group(id, name)
+        val members = document["members"] as? List<String>
+        if (members != null) {
+            for (i in 0 until members.count()) {
+                group.memberIDs.add(members[i])
+            }
+        }
+        return group
+    }
+
+    fun createUserRecordFirestore(user: User) {
+        firestoreDatabase
+                .collection("users")
+                .document(user.id)
+                .set(buildDocumentFromUser(user))
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Created User")
+                    } else {
+                        Log.e("BackendManager", "Failed To Create User: " + task.exception)
+                    }
+                }
+    }
+
+    fun deleteUserRecordFirestore(userID: String) {
+        firestoreDatabase
+                .collection("users")
+                .document(userID)
+                .delete()
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Deleted User")
+                    } else {
+                        Log.e("BackendManager", "Failed To Delete User: " + task.exception)
+                    }
+                }
+    }
+
+    fun getUserRecordFirestore(userID: String, callback: (user: User?) -> Unit) {
+        firestoreDatabase
+                .collection("users")
+                .document(userID)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    val document = task.result
+                    if (document != null) {
+                        callback(buildUserFromDocument(document.data))
+                    } else {
+                        callback(null)
+                    }
+                }
+    }
+
+    fun createGroupRecordFirestore(group: Group) {
+        firestoreDatabase
+                .collection("groups")
+                .document(group.id)
+                .set(buildDocumentFromGroup(group))
+    }
+
+    fun deleteGroupRecordFirestore(groupID: String) {
+        firestoreDatabase
+                .collection("groups")
+                .document(groupID)
+                .delete()
+    }
+
+    fun getGroupRecordFirestore(groupID: String, callback: (group: Group?) -> Unit) {
+        firestoreDatabase
+                .collection("groups")
+                .document(groupID)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    val document = task.result
+                    if (document != null) {
+                        callback(buildGroupFromDocument(document.data))
+                    } else {
+                        callback(null)
+                    }
+                }
     }
 
     // Create a record for a User in Google App Engine.
