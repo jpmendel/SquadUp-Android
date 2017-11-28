@@ -94,20 +94,23 @@ class MessagingTestActivity : BaseActivity() {
 
     private fun setupButtons() {
         sendTextButton.setOnClickListener {
-            app.backend.sendTextMessage("messages", "jacob", "Jacob Mendelowitz", "Hello World!")
+            app.backend.getUserRecord("jacob@email.com") {
+                user: User? ->
+                if (user != null) {
+                    messageText.text = "Retrieved ${user.name}"
+                } else {
+                    messageText.text = "No user with that ID"
+                }
+            }
         }
         sendLoginButton.setOnClickListener {
-            app.backend.sendLoginMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
-        }
-        sendLoginButton.setOnLongClickListener {
-            showScreen(MeetUpActivity::class.java)
-            true
+            app.backend.createUserRecord(User("jacob@email.com", "Jacob Mendelowitz"))
         }
         sendLocationButton.setOnClickListener {
-            app.backend.sendLocationMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
+            app.backend.deleteUserRecord("jacob@email.com")
         }
         notificationButton.setOnClickListener {
-            app.backend.createUserRecordFirestore(User("jacob@email.com", "Jacob Mendelowitz"))
+            showScreen(MeetUpActivity::class.java)
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")
