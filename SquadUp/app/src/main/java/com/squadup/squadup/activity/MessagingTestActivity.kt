@@ -56,6 +56,10 @@ class MessagingTestActivity : BaseActivity() {
                 }
             }
         }
+        sendTextButton.setOnLongClickListener {
+            app.backend.addUserToUserList("user1")
+            true
+        }
         sendLoginButton.setOnClickListener {
             app.backend.createUserRecord(app.user!!)
         }
