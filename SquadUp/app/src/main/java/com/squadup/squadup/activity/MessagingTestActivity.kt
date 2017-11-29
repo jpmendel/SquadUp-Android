@@ -44,6 +44,8 @@ class MessagingTestActivity : BaseActivity() {
     }
 
     private fun setupButtons() {
+        app.user = User("test@email.com", "Test User")
+        app.updateCurrentUserRegistration()
         sendTextButton.setOnClickListener {
             app.backend.getUserRecord("test@email.com") {
                 user: User? ->
@@ -55,7 +57,13 @@ class MessagingTestActivity : BaseActivity() {
             }
         }
         sendLoginButton.setOnClickListener {
-            app.backend.createUserRecord(User("test@email.com", "Test User"))
+            app.backend.createUserRecord(app.user!!)
+        }
+        sendLoginButton.setOnLongClickListener {
+            app.user!!.friends.add("other@email.com")
+            app.user!!.friends.add("another@email.com")
+            app.backend.createUserRecord(app.user!!)
+            true
         }
         sendLocationButton.setOnClickListener {
             app.backend.deleteUserRecord("test@email.com")

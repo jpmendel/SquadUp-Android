@@ -154,6 +154,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Resets any values associated with the activity.
     private fun resetValues() {
+        // Group view screen should allocate member data and then set to ApplicationManager.
         //user = app.user <- Should be this.
         //group = app.group <- Should be this.
         user = User("jacob", "Jacob Mendelowitz")
@@ -612,6 +613,10 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         showScreen(MeetingLocationViewActivity::class.java) {
             intent: Intent ->
             intent.putExtra("meetingLocation", meetingLocation!!.key)
+            intent.putExtra("startLatitude", myLocation!!.latitude)
+            intent.putExtra("startLongitude", myLocation!!.longitude)
+            intent.putExtra("destinationLatitude", meetingLocation!!.value.latitude)
+            intent.putExtra("destinationLongitude", meetingLocation!!.value.longitude)
         }
     }
 
