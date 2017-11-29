@@ -18,6 +18,7 @@ class LaunchActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
+        app.setup()
         initializeViews()
         animationHandler.post(animateSplashImage)
         Handler().postDelayed({

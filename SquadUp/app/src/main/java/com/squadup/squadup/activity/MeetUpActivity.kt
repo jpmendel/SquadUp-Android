@@ -154,6 +154,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Resets any values associated with the activity.
     private fun resetValues() {
+        // Group view screen should allocate member data and then set to ApplicationManager.
+        //user = app.user <- Should be this.
+        //group = app.group <- Should be this.
         user = User("jacob", "Jacob Mendelowitz")
         group = Group("squad-up", "SquadUp")
         group.memberIDs = mutableListOf("jacob", "jason", "stephen", "eric")
@@ -592,7 +595,13 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
         if (!findingMeetingLocation) {
-            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", "Hey, let's meet up!")
+            val recipients = mutableListOf<String>()
+            for (member in group.members) {
+                if (member.id != user.id && member.registrationToken != null) {
+                    recipients.add(member.registrationToken!!)
+                }
+            }
+            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", recipients)
         }
     }
 
@@ -604,6 +613,10 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         showScreen(MeetingLocationViewActivity::class.java) {
             intent: Intent ->
             intent.putExtra("meetingLocation", meetingLocation!!.key)
+            intent.putExtra("startLatitude", myLocation!!.latitude)
+            intent.putExtra("startLongitude", myLocation!!.longitude)
+            intent.putExtra("destinationLatitude", meetingLocation!!.value.latitude)
+            intent.putExtra("destinationLongitude", meetingLocation!!.value.longitude)
         }
     }
 

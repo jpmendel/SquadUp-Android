@@ -12,4 +12,6 @@ class User(id: String, name: String) {
 
     var groups: MutableList<Group> = mutableListOf()
 
+    var registrationToken: String? = null
+
 }

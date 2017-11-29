@@ -196,10 +196,17 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a push notification to users subscribed to a certain topic.
-    fun sendNotification(topic: String, title: String, body: String) {
+    fun sendNotification(title: String, body: String, recipients: MutableList<String>) {
+        if (recipients.isEmpty()) {
+            return
+        }
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        json.put("to", "/topics/" + topic)
+        val registrationTokens = JSONArray()
+        for (recipient in recipients) {
+            registrationTokens.put(recipient)
+        }
+        json.put("to", registrationTokens)
         val notification = JSONObject()
         notification.put("title", title)
         notification.put("body", body)
@@ -214,17 +221,18 @@ class BackendManager(context: Context?) {
     }
 
     // Builds a Firestore document from a user object.
-    private fun buildDocumentFromUser(user: User): MutableMap<String, Any> {
-        val userData = mutableMapOf<String, Any>()
+    private fun buildDocumentFromUser(user: User): MutableMap<String, Any?> {
+        val userData = mutableMapOf<String, Any?>()
         userData["id"] = user.id
         userData["name"] = user.name
         userData["friends"] = user.friends.toList()
         userData["groupIDs"] = user.groupIDs.toList()
+        userData["registrationToken"] = user.registrationToken
         return userData
     }
 
     // Builds a user object from a Firestore document.
-    private fun buildUserFromDocument(document: MutableMap<String, Any>): User {
+    private fun buildUserFromDocument(document: MutableMap<String, Any?>): User {
         val id = document["id"] as String
         val name = document["name"] as String
         val user = User(id, name)
@@ -297,8 +305,8 @@ class BackendManager(context: Context?) {
     }
 
     // Builds a Firestore document from a group object.
-    private fun buildDocumentFromGroup(group: Group): MutableMap<String, Any> {
-        val groupData = mutableMapOf<String, Any>()
+    private fun buildDocumentFromGroup(group: Group): MutableMap<String, Any?> {
+        val groupData = mutableMapOf<String, Any?>()
         groupData["id"] = group.id
         groupData["name"] = group.name
         groupData["members"] = group.memberIDs.toList()
@@ -306,7 +314,7 @@ class BackendManager(context: Context?) {
     }
 
     // Builds a group object from a Firestore document.
-    private fun buildGroupFromDocument(document: MutableMap<String, Any>): Group {
+    private fun buildGroupFromDocument(document: MutableMap<String, Any?>): Group {
         val id = document["id"] as String
         val name = document["name"] as String
         val group = Group(id, name)
