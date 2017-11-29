@@ -56,6 +56,9 @@ class LoginActivity : BaseActivity() {
             Log.i("Login", "Email " + account.email)
             Log.i("Login", "Account ID " + account.id)
 
+
+            //TODO Add user to the backend array if they're not already there.
+            app.backend.addUserToUserList(account.email!!)
             setUserGlobal(account)
             Handler().postDelayed({
                 showScreen(MessagingTestActivity::class.java)
@@ -109,10 +112,12 @@ class LoginActivity : BaseActivity() {
                     var newUser = User(account.email!!, account.displayName!!)
                     app.backend.createUserRecord(newUser)
                     app.user = newUser
+                    app.updateCurrentUserRegistration()
                 }
                 else{
                     //send the user to the application manager
                     app.user = user!!
+                    app.updateCurrentUserRegistration()
                 }
         }
 
