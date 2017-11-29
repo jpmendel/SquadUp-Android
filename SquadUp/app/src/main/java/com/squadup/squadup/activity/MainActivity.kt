@@ -4,6 +4,8 @@ import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import android.support.v4.view.ViewPager
+import com.squadup.squadup.R
 
 /**
  * Created by StephenHaberle on 11/27/17.
@@ -19,24 +21,35 @@ class MainActivity : BaseActivity() {
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
+    private var container: ViewPager? = null
+    private var tabs: TabLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setSupportActionBar(toolbar)
+        initializeViews()
+    }
+
+    override fun initializeViews() {
+        super.initializeViews()
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
 
-        // Set up the ViewPager with the sections adapter.
-        container.adapter = mSectionsPagerAdapter
+        container = findViewById(R.id.container)
+        tabs = findViewById(R.id.tabs)
 
-        container.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
-        tabs.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
+        // Set up the ViewPager with the sections adapter.
+        container!!.adapter = mSectionsPagerAdapter
+
+        container!!.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
+        tabs!!.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
+
+        //create those red varibales as members and find them in R here
 
     }
-
 
     /**
      * A [FragmentPagerAdapter] that returns a fragment corresponding to
@@ -61,4 +74,3 @@ class MainActivity : BaseActivity() {
 
 }
 
-}
