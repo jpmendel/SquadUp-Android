@@ -35,6 +35,9 @@ class BackendManager(context: Context?) {
     // The name for the collection of group records in the Firestore database.
     private val GROUP_COLLECTION = "groups"
 
+    // The name for the collection/document of the list of all users in the Firestore database.
+    private val USER_LIST = "user_list"
+
     // The reference for the Firestore database.
     private var firestoreDatabase = FirebaseFirestore.getInstance()
 
@@ -262,7 +265,7 @@ class BackendManager(context: Context?) {
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Created User: " + user.id)
                     } else {
-                        Log.e("BackendManager", "Failed To Create User: " + task.exception)
+                        Log.e("BackendManager", "Failed to Create User: " + task.exception)
                     }
                 }
     }
@@ -278,7 +281,7 @@ class BackendManager(context: Context?) {
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Deleted User: " + userID)
                     } else {
-                        Log.e("BackendManager", "Failed To Delete User: " + task.exception)
+                        Log.e("BackendManager", "Failed to Delete User: " + task.exception)
                     }
                 }
     }
@@ -338,7 +341,7 @@ class BackendManager(context: Context?) {
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Created Group: " + group.id)
                     } else {
-                        Log.e("BackendManager", "Failed To Create Group: " + task.exception)
+                        Log.e("BackendManager", "Failed to Create Group: " + task.exception)
                     }
                 }
     }
@@ -354,7 +357,7 @@ class BackendManager(context: Context?) {
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Deleted Group: " + groupID)
                     } else {
-                        Log.e("BackendManager", "Failed To Delete Group: " + task.exception)
+                        Log.e("BackendManager", "Failed to Delete Group: " + task.exception)
                     }
                 }
     }
@@ -378,6 +381,55 @@ class BackendManager(context: Context?) {
                         callback(null)
                     }
                 }
+    }
+
+    // Retrieves the list of all user IDs for the app.
+    fun getUserList(callback: (userList: MutableList<String>) -> Unit) {
+        firestoreDatabase
+                .collection(USER_LIST)
+                .document(USER_LIST)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    if (task.isSuccessful) {
+                        val document = task.result
+                        if (document != null && document.exists()) {
+                            val userList = document.data["user_list"] as? List<String>
+                            if (userList != null) {
+                                callback(userList.toMutableList())
+                            } else {
+                                callback(mutableListOf())
+                            }
+                        } else {
+                            callback(mutableListOf())
+                        }
+                    } else {
+                        callback(mutableListOf())
+                    }
+                }
+    }
+
+    // Adds a user ID to the list of all user IDs for the app.
+    fun addUserToUserList(userID: String) {
+        getUserList {
+            userList: MutableList<String> ->
+            if (!userList.contains(userID)) {
+                userList.add(userID)
+                val listData = mutableMapOf<String, Any?>()
+                listData["user_list"] = userList.toList()
+                firestoreDatabase
+                        .collection(USER_LIST)
+                        .document(USER_LIST)
+                        .set(listData)
+                        .addOnCompleteListener { task: Task<Void> ->
+                            if (task.isSuccessful) {
+                                Log.i("BackendManager", "Successfully Added User to List: " + userID)
+                            } else {
+                                Log.e("BackendManager", "Failed to Add User to List: " + task.exception)
+                            }
+                        }
+            }
+        }
     }
 
 }
