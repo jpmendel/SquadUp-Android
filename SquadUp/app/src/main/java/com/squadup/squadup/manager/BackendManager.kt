@@ -84,11 +84,9 @@ class BackendManager(context: Context?) {
         data.put("senderName", senderName)
         data.put("text", text)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -105,11 +103,9 @@ class BackendManager(context: Context?) {
         data.put("latitude", latitude)
         data.put("longitude", longitude)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -126,11 +122,9 @@ class BackendManager(context: Context?) {
         data.put("latitude", latitude)
         data.put("longitude", longitude)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -145,11 +139,9 @@ class BackendManager(context: Context?) {
         data.put("senderID", senderID)
         data.put("senderName", senderName)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -166,11 +158,9 @@ class BackendManager(context: Context?) {
         data.put("receiverID", receiverID)
         data.put("response", response)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -186,11 +176,9 @@ class BackendManager(context: Context?) {
         data.put("senderName", senderName)
         data.put("response", decision)
         json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -211,11 +199,9 @@ class BackendManager(context: Context?) {
         notification.put("title", title)
         notification.put("body", body)
         json.put("notification", notification)
-        sendPostRequest(MESSAGING_SERVER_URL, json, {
-            response: JSONObject? ->
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
-        }, {
-            error: VolleyError? ->
+        }, { error: VolleyError? ->
             Log.e("BackendManager", "Error: " + error)
         })
     }
@@ -257,8 +243,7 @@ class BackendManager(context: Context?) {
                 .collection(USER_COLLECTION)
                 .document(user.id)
                 .set(buildDocumentFromUser(user))
-                .addOnCompleteListener {
-                    task: Task<Void> ->
+                .addOnCompleteListener { task: Task<Void> ->
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Created User: " + user.id)
                     } else {
@@ -273,8 +258,7 @@ class BackendManager(context: Context?) {
                 .collection(USER_COLLECTION)
                 .document(userID)
                 .delete()
-                .addOnCompleteListener {
-                    task: Task<Void> ->
+                .addOnCompleteListener { task: Task<Void> ->
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Deleted User: " + userID)
                     } else {
@@ -289,8 +273,7 @@ class BackendManager(context: Context?) {
                 .collection(USER_COLLECTION)
                 .document(userID)
                 .get()
-                .addOnCompleteListener{
-                    task: Task<DocumentSnapshot> ->
+                .addOnCompleteListener { task: Task<DocumentSnapshot> ->
                     if (task.isSuccessful) {
                         val document = task.result
                         if (document != null && document.exists()) {
@@ -333,8 +316,7 @@ class BackendManager(context: Context?) {
                 .collection(GROUP_COLLECTION)
                 .document(group.id)
                 .set(buildDocumentFromGroup(group))
-                .addOnCompleteListener {
-                    task: Task<Void> ->
+                .addOnCompleteListener { task: Task<Void> ->
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Created Group: " + group.id)
                     } else {
@@ -349,8 +331,7 @@ class BackendManager(context: Context?) {
                 .collection(GROUP_COLLECTION)
                 .document(groupID)
                 .delete()
-                .addOnCompleteListener {
-                    task: Task<Void> ->
+                .addOnCompleteListener { task: Task<Void> ->
                     if (task.isSuccessful) {
                         Log.i("BackendManager", "Successfully Deleted Group: " + groupID)
                     } else {
@@ -365,8 +346,7 @@ class BackendManager(context: Context?) {
                 .collection(GROUP_COLLECTION)
                 .document(groupID)
                 .get()
-                .addOnCompleteListener{
-                    task: Task<DocumentSnapshot> ->
+                .addOnCompleteListener { task: Task<DocumentSnapshot> ->
                     if (task.isSuccessful) {
                         val document = task.result
                         if (document != null && document.exists()) {
@@ -380,4 +360,16 @@ class BackendManager(context: Context?) {
                 }
     }
 
+    // Pass in a given Group with only the list of the member IDs
+    // Returns a Group with each of the Users pulled from the backend
+    fun getGroupData(group: Group): Group {
+        for (i in 0 until group.memberIDs.count()) {
+            getUserRecord(group.memberIDs[i]) { user: User? ->
+                if (user != null) {
+                    group.members[i] = user
+                }
+            }
+        }
+        return group
+    }
 }
