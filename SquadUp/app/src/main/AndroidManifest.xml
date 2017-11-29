@@ -55,10 +55,10 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.MeetingLocationViewActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.GroupViewActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

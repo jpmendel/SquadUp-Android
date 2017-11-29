@@ -4,12 +4,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import com.squadup.squadup.R
-import android.support.v4.content.LocalBroadcastManager
-import android.content.Intent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.IntentFilter
-import android.widget.Toast
+import com.squadup.squadup.data.User
 
 class MessagingTestActivity : BaseActivity() {
 
@@ -29,45 +24,11 @@ class MessagingTestActivity : BaseActivity() {
 
     private lateinit var listeningText: TextView
 
-    private lateinit var broadcastManager: LocalBroadcastManager
-
-    private var messagesReceived: Int = 0
-
-    private val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == TEXT_MESSAGE) {
-                val message = intent.getStringExtra("text")
-                if (message != null) {
-                    messagesReceived++
-                    if (messagesReceived == 1) {
-                        messageText.text = "You Have $messagesReceived New Message!"
-                    } else {
-                        messageText.text = "You Have $messagesReceived New Messages!"
-                    }
-                }
-            } else if (intent.action == LOGIN_MESSAGE) {
-                val senderName = intent.getStringExtra("senderName")
-                Toast.makeText(baseContext, String.format("%s has joined", senderName), Toast.LENGTH_SHORT).show()
-            } else if (intent.action == LOCATION_MESSAGE) {
-                val senderName = intent.getStringExtra("senderName")
-                val latitude = intent.getDoubleExtra("latitude", 0.0)
-                val longitude = intent.getDoubleExtra("longitude", 0.0)
-                Toast.makeText(baseContext, String.format("%s is at (%f, %f)", senderName, latitude, longitude), Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_messaging_test)
         initializeViews()
-        initializeBroadcastReceiver()
         setupButtons()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
     override fun initializeViews() {
@@ -82,31 +43,37 @@ class MessagingTestActivity : BaseActivity() {
         listeningText = findViewById(R.id.listening_text)
     }
 
-    private fun initializeBroadcastReceiver() {
-        broadcastManager = LocalBroadcastManager.getInstance(this)
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(TEXT_MESSAGE)
-        intentFilter.addAction(LOGIN_MESSAGE)
-        intentFilter.addAction(LOCATION_MESSAGE)
-        broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
-    }
-
     private fun setupButtons() {
+        app.user = User("test@email.com", "Test User")
+        app.updateCurrentUserRegistration()
         sendTextButton.setOnClickListener {
-            app.backend.sendTextMessage("messages", "jacob", "Jacob Mendelowitz", "Hello World!")
+            app.backend.getUserRecord("test@email.com") {
+                user: User? ->
+                if (user != null) {
+                    messageText.text = "Retrieved ${user.name}"
+                } else {
+                    messageText.text = "No user with that ID"
+                }
+            }
+        }
+        sendTextButton.setOnLongClickListener {
+            app.backend.addUserToUserList("user1")
+            true
         }
         sendLoginButton.setOnClickListener {
-            app.backend.sendLoginMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
+            app.backend.createUserRecord(app.user!!)
         }
         sendLoginButton.setOnLongClickListener {
-            showScreen(MeetUpActivity::class.java)
+            app.user!!.friends.add("other@email.com")
+            app.user!!.friends.add("another@email.com")
+            app.backend.createUserRecord(app.user!!)
             true
         }
         sendLocationButton.setOnClickListener {
-            app.backend.sendLocationMessage("messages", "jacob", "Jacob Mendelowitz", 1.0, 1.0)
+            app.backend.deleteUserRecord("test@email.com")
         }
         notificationButton.setOnClickListener {
-            app.backend.sendNotification("messages", "SquadUp", "Hey, lets meet up!")
+            showScreen(MeetUpActivity::class.java)
         }
         startListeningButton.setOnClickListener {
             app.backend.startListening("messages")

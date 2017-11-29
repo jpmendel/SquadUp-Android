@@ -154,6 +154,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Resets any values associated with the activity.
     private fun resetValues() {
+        // Group view screen should allocate member data and then set to ApplicationManager.
+        //user = app.user <- Should be this.
+        //group = app.group <- Should be this.
         user = User("jacob", "Jacob Mendelowitz")
         group = Group("squad-up", "SquadUp")
         group.memberIDs = mutableListOf("jacob", "jason", "stephen", "eric")
@@ -172,16 +175,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private fun setupButtons() {
         testButton.setOnClickListener {
             if (!locations.containsKey("jason")) {
-                addLocation("jason", "Jason Corriveau", LatLng(40.95231, -76.880407))
+                app.backend.sendLoginMessage(group.id, "jason", "Jason Corriveau", 40.95231, -76.880407)
             } else if (!locations.containsKey("stephen")) {
-                addLocation("stephen", "Stephen Haberle", LatLng(40.957906, -76.884733))
+                app.backend.sendLoginMessage(group.id, "stephen", "Stephen Haberle", 40.957906, -76.884733)
             } else if (!locations.containsKey("eric")) {
-                addLocation("eric", "Eric Marshall", LatLng(40.956436, -76.884541))
-            }
-            zoomToFit()
-            updateMembersRemainingText()
-            if (checkAllMembersPresent()) {
-                findMeetingLocation()
+                app.backend.sendLoginMessage(group.id, "eric", "Eric Marshall", 40.956436, -76.884541)
             }
         }
         meetNowButton.setOnClickListener {
@@ -245,7 +243,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
                 locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, null)
             }
             startAnimatingLoadingImage()
-            statusText.text = "Acquiring..."
+            statusText.text = "Acquiring Location..."
         }
     }
 
@@ -597,14 +595,28 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
         if (!findingMeetingLocation) {
-            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", "Hey, let's meet up!")
+            val recipients = mutableListOf<String>()
+            for (member in group.members) {
+                if (member.id != user.id && member.registrationToken != null) {
+                    recipients.add(member.registrationToken!!)
+                }
+            }
+            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", recipients)
         }
     }
 
+    // Continues to the next screen when the meet up location is determined.
     private fun onContinueButtonClick() {
+        stopAnimatingText()
+        app.backend.stopListening(group.id)
+        broadcastManager.unregisterReceiver(broadcastReceiver)
         showScreen(MeetingLocationViewActivity::class.java) {
             intent: Intent ->
             intent.putExtra("meetingLocation", meetingLocation!!.key)
+            intent.putExtra("startLatitude", myLocation!!.latitude)
+            intent.putExtra("startLongitude", myLocation!!.longitude)
+            intent.putExtra("destinationLatitude", meetingLocation!!.value.latitude)
+            intent.putExtra("destinationLongitude", meetingLocation!!.value.longitude)
         }
     }
 
@@ -631,6 +643,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         statusText.alpha = 1f
     }
 
+    // Animates the loading image while acquiring the user's location.
     private val animateLoadingImage = object : Runnable {
         override fun run() {
             loadingImage.animate()
@@ -649,22 +662,24 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }
     }
 
+    // Start animating the loading image.
     private fun startAnimatingLoadingImage() {
         loadingImageAnimationHandler.post(animateLoadingImage)
         loadingImage.alpha = 1f
     }
 
+    // Stop animating the loading image.
     private fun stopAnimatingLoadingImage() {
         loadingImageAnimationHandler.removeCallbacks(animateLoadingImage)
         loadingImage.alpha = 0f
     }
 
-    // Animates the lower button layout onto the screen.
+    // Animates the map and lower button layout onto the screen.
     private fun animateScreenIn() {
         mapFrame.animate()
                 .setInterpolator(DecelerateInterpolator())
                 .translationX(0f)
-                .duration = 250
+                .duration = 300
         lowerButtonLayout.animate()
                 .setInterpolator(DecelerateInterpolator())
                 .translationY(0f)

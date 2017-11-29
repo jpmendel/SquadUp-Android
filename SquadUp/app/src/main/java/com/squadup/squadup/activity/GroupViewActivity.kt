@@ -40,7 +40,7 @@ class GroupViewActivity : BaseActivity() {
     fun meetUp(view: View){
         Handler().postDelayed({
             //TODO: Change this screen to the meet-up screen once master has been updated.
-            presentScreen(MeetUpActivity::class.java)
+            showScreen(MeetUpActivity::class.java)
         }, 0)
     }
 

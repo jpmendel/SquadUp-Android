@@ -18,11 +18,12 @@ class LaunchActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
+        app.setup()
         initializeViews()
         animationHandler.post(animateSplashImage)
         Handler().postDelayed({
             animationHandler.removeCallbacks(animateSplashImage)
-            presentScreen(LoginActivity::class.java)
+            presentScreen(MessagingTestActivity::class.java)
         }, 2000)
     }
 

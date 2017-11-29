@@ -7,6 +7,9 @@ import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.Group
@@ -18,35 +21,36 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * A manager class to handle any data being sent to or received by the Google App Engine backend.
- * Also handles sending of Firebase messages.
+ * A manager class to handle any data being sent to or received by the Cloud Firestore backend.
+ * Also handles sending of Firebase Cloud messages.
  */
 class BackendManager(context: Context?) {
-
-    // URL for the Google App Engine datastore.
-    private val DATASTORE_SERVER_URL = "https://squadup-185416.appspot.com/"
 
     // URL for the Firebase messaging server.
     private val MESSAGING_SERVER_URL = "https://fcm.googleapis.com/fcm/send"
 
-    // Data types stored in GAE.
-    private val USER = 1
-    private val GROUP = 2
+    // The name for the collection of user records in the Firestore database.
+    private val USER_COLLECTION = "users"
 
-    // Operations for data in GAE.
-    private val CREATE = 1
-    private val DELETE = 2
-    private val READ = 3
+    // The name for the collection of group records in the Firestore database.
+    private val GROUP_COLLECTION = "groups"
+
+    // The name for the collection/document of the list of all users in the Firestore database.
+    private val USER_LIST = "user_list"
+
+    // The reference for the Firestore database.
+    private var firestoreDatabase = FirebaseFirestore.getInstance()
 
     // A request queue to handle HTTP requests made by the app.
-    private var httpRequestQueue: RequestQueue = Volley.newRequestQueue(context)
+    private var httpRequestQueue = Volley.newRequestQueue(context)
 
     // Sends a JSON post request to a server address.
     private fun sendPostRequest(address: String, data: JSONObject,
                                 responseHandler: (response: JSONObject?) -> Unit,
                                 errorHandler: (error: VolleyError?) -> Unit) {
+        val postRequest: JsonObjectRequest
         if (address == MESSAGING_SERVER_URL) {
-            val postRequest = object : JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler) {
+            postRequest = object : JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler) {
                 override fun getHeaders(): MutableMap<String, String> {
                     val params = mutableMapOf<String, String>()
                     params.put("Content-Type", "application/json")
@@ -54,11 +58,10 @@ class BackendManager(context: Context?) {
                     return params
                 }
             }
-            httpRequestQueue.add(postRequest)
         } else {
-            val postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
-            httpRequestQueue.add(postRequest)
+            postRequest = JsonObjectRequest(Request.Method.POST, address, data, responseHandler, errorHandler)
         }
+        httpRequestQueue.add(postRequest)
     }
 
     // Start listening to a topic. Any messages sent to the same topic will be received.
@@ -73,7 +76,7 @@ class BackendManager(context: Context?) {
         Log.i("BackendManager", "Stopped listening to: " + topic)
     }
 
-    // Send a message to a certain topic. Any users listening to that topic will receive the message.
+    // Send a text message to a certain topic. Any users listening to that topic will receive the message.
     fun sendTextMessage(topic: String, senderID: String, senderName: String, text: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -93,6 +96,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a login message to users subscribed to a certain topic.
     fun sendLoginMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -113,6 +117,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a location message to users subscribed to a certain topic.
     fun sendLocationMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -133,6 +138,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready request message to users subscribed to a certain topic.
     fun sendReadyRequestMessage(topic: String, senderID: String, senderName: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -151,6 +157,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready response message to users subscribed to a certain topic.
     fun sendReadyResponseMessage(topic: String, senderID: String, senderName: String, receiverID: String, response: Boolean) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -171,6 +178,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a ready decision message to users subscribed to a certain topic.
     fun sendReadyDecisionMessage(topic: String, senderID: String, senderName: String, decision: Boolean) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -190,10 +198,18 @@ class BackendManager(context: Context?) {
         })
     }
 
-    fun sendNotification(topic: String, title: String, body: String) {
+    // Sends a push notification to users subscribed to a certain topic.
+    fun sendNotification(title: String, body: String, recipients: MutableList<String>) {
+        if (recipients.isEmpty()) {
+            return
+        }
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        json.put("to", "/topics/" + topic)
+        val registrationTokens = JSONArray()
+        for (recipient in recipients) {
+            registrationTokens.put(recipient)
+        }
+        json.put("to", registrationTokens)
         val notification = JSONObject()
         notification.put("title", title)
         notification.put("body", body)
@@ -207,165 +223,213 @@ class BackendManager(context: Context?) {
         })
     }
 
-    // Build a JSON object from a User object.
-    private fun buildJSONFromUser(user: User): JSONObject {
-        val userObj = JSONObject()
-        userObj.put("id", user.id)
-        userObj.put("name", user.name)
-        val friendArray = JSONArray()
-        for (friend in user.friends) {
-            friendArray.put(friend)
-        }
-        userObj.put("friends", friendArray)
-        val groupArray = JSONArray()
-        for (group in user.groupIDs) {
-            groupArray.put(group)
-        }
-        userObj.put("groupIDs", user.groupIDs)
-        return userObj
+    // Builds a Firestore document from a user object.
+    private fun buildDocumentFromUser(user: User): MutableMap<String, Any?> {
+        val userData = mutableMapOf<String, Any?>()
+        userData["id"] = user.id
+        userData["name"] = user.name
+        userData["friends"] = user.friends.toList()
+        userData["groupIDs"] = user.groupIDs.toList()
+        userData["registrationToken"] = user.registrationToken
+        return userData
     }
 
-    // Build a User object from a JSON object.
-    private fun buildUserFromJSON(json: JSONObject): User {
-        val id = json.getString("id")
-        val name = json.getString("name")
+    // Builds a user object from a Firestore document.
+    private fun buildUserFromDocument(document: MutableMap<String, Any?>): User {
+        val id = document["id"] as String
+        val name = document["name"] as String
         val user = User(id, name)
-        val friends = json.getJSONArray("friends")
-        for (i in 0 until friends.length()) {
-            user.friends.add(friends[i] as String)
+        val friends = document["friends"] as? List<String>
+        if (friends != null) {
+            for (i in 0 until friends.count()) {
+                user.friends.add(friends[i])
+            }
         }
-        val groups = json.getJSONArray("groupIDs")
-        for (i in 0 until groups.length()) {
-            user.groupIDs.add(groups[i] as String)
+        val groups = document["groupIDs"] as? List<String>
+        if (groups != null) {
+            for (i in 0 until groups.count()) {
+                user.groupIDs.add(groups[i])
+            }
         }
         return user
     }
 
-    // Create a record for a User in Google App Engine.
+    // Creates or updates a user record in the Firestore database backend.
     fun createUserRecord(user: User) {
-        val json = JSONObject()
-        json.put("dataType", USER)
-        json.put("requestType", CREATE)
-        json.put("content", buildJSONFromUser(user))
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response?.getString("content"))
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
+        firestoreDatabase
+                .collection(USER_COLLECTION)
+                .document(user.id)
+                .set(buildDocumentFromUser(user))
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Created User: " + user.id)
+                    } else {
+                        Log.e("BackendManager", "Failed to Create User: " + task.exception)
+                    }
+                }
     }
 
-    // Delete a record for a User in Google App Engine.
+    // Deletes a user record in the Firestore database backend.
     fun deleteUserRecord(userID: String) {
-        val json = JSONObject()
-        json.put("dataType", USER)
-        json.put("requestType", DELETE)
-        json.put("content", userID)
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response?.getString("content"))
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
+        firestoreDatabase
+                .collection(USER_COLLECTION)
+                .document(userID)
+                .delete()
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Deleted User: " + userID)
+                    } else {
+                        Log.e("BackendManager", "Failed to Delete User: " + task.exception)
+                    }
+                }
     }
 
-    // Retrieve a record for a User in Google App Engine.
+    // Retrieves a user record from the Firestore database backend.
     fun getUserRecord(userID: String, callback: (user: User?) -> Unit) {
-        val json = JSONObject()
-        json.put("dataType", USER)
-        json.put("requestType", READ)
-        json.put("content", userID)
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-            if (response != null) {
-                callback(buildUserFromJSON(response))
-            } else {
-                callback(null)
-            }
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-            callback(null)
-        })
+        firestoreDatabase
+                .collection(USER_COLLECTION)
+                .document(userID)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    if (task.isSuccessful) {
+                        val document = task.result
+                        if (document != null && document.exists()) {
+                            callback(buildUserFromDocument(document.data))
+                        } else {
+                            callback(null)
+                        }
+                    } else {
+                        callback(null)
+                    }
+                }
     }
 
-    // Build a JSON object from a Group object.
-    private fun buildJSONFromGroup(group: Group): JSONObject {
-        val groupObj = JSONObject()
-        groupObj.put("id", group.id)
-        groupObj.put("name", group.name)
-        val memberArray = JSONArray()
-        for (member in group.memberIDs) {
-            memberArray.put(member)
-        }
-        groupObj.put("members", memberArray)
-        return groupObj
+    // Builds a Firestore document from a group object.
+    private fun buildDocumentFromGroup(group: Group): MutableMap<String, Any?> {
+        val groupData = mutableMapOf<String, Any?>()
+        groupData["id"] = group.id
+        groupData["name"] = group.name
+        groupData["members"] = group.memberIDs.toList()
+        return groupData
     }
 
-    // Build a User object from a JSON object.
-    private fun buildGroupFromJSON(json: JSONObject): Group {
-        val id = json.getString("id")
-        val name = json.getString("name")
+    // Builds a group object from a Firestore document.
+    private fun buildGroupFromDocument(document: MutableMap<String, Any?>): Group {
+        val id = document["id"] as String
+        val name = document["name"] as String
         val group = Group(id, name)
-        val members = json.getJSONArray("members")
-        for (i in 0 until members.length()) {
-            group.memberIDs.add(members[i] as String)
+        val members = document["members"] as? List<String>
+        if (members != null) {
+            for (i in 0 until members.count()) {
+                group.memberIDs.add(members[i])
+            }
         }
         return group
     }
 
-    // Create a record for a User in Google App Engine.
+    // Creates or updates a user record in the Firestore database backend.
     fun createGroupRecord(group: Group) {
-        val json = JSONObject()
-        json.put("dataType", GROUP)
-        json.put("requestType", CREATE)
-        json.put("content", buildJSONFromGroup(group))
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response?.getString("content"))
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
+        firestoreDatabase
+                .collection(GROUP_COLLECTION)
+                .document(group.id)
+                .set(buildDocumentFromGroup(group))
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Created Group: " + group.id)
+                    } else {
+                        Log.e("BackendManager", "Failed to Create Group: " + task.exception)
+                    }
+                }
     }
 
-    // Delete a record for a User in Google App Engine.
+    // Deletes a user record in the Firestore database backend.
     fun deleteGroupRecord(groupID: String) {
-        val json = JSONObject()
-        json.put("dataType", GROUP)
-        json.put("requestType", DELETE)
-        json.put("content", groupID)
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response?.getString("content"))
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
+        firestoreDatabase
+                .collection(GROUP_COLLECTION)
+                .document(groupID)
+                .delete()
+                .addOnCompleteListener {
+                    task: Task<Void> ->
+                    if (task.isSuccessful) {
+                        Log.i("BackendManager", "Successfully Deleted Group: " + groupID)
+                    } else {
+                        Log.e("BackendManager", "Failed to Delete Group: " + task.exception)
+                    }
+                }
     }
 
-    // Retrieve a record for a User in Google App Engine.
+    // Retrieves a user record from the Firestore database backend.
     fun getGroupRecord(groupID: String, callback: (group: Group?) -> Unit) {
-        val json = JSONObject()
-        json.put("dataType", GROUP)
-        json.put("requestType", READ)
-        json.put("content", groupID)
-        sendPostRequest(DATASTORE_SERVER_URL, json, {
-            response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-            if (response != null) {
-                callback(buildGroupFromJSON(response))
-            } else {
-                callback(null)
+        firestoreDatabase
+                .collection(GROUP_COLLECTION)
+                .document(groupID)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    if (task.isSuccessful) {
+                        val document = task.result
+                        if (document != null && document.exists()) {
+                            callback(buildGroupFromDocument(document.data))
+                        } else {
+                            callback(null)
+                        }
+                    } else {
+                        callback(null)
+                    }
+                }
+    }
+
+    // Retrieves the list of all user IDs for the app.
+    fun getUserList(callback: (userList: MutableList<String>) -> Unit) {
+        firestoreDatabase
+                .collection(USER_LIST)
+                .document(USER_LIST)
+                .get()
+                .addOnCompleteListener{
+                    task: Task<DocumentSnapshot> ->
+                    if (task.isSuccessful) {
+                        val document = task.result
+                        if (document != null && document.exists()) {
+                            val userList = document.data["user_list"] as? List<String>
+                            if (userList != null) {
+                                callback(userList.toMutableList())
+                            } else {
+                                callback(mutableListOf())
+                            }
+                        } else {
+                            callback(mutableListOf())
+                        }
+                    } else {
+                        callback(mutableListOf())
+                    }
+                }
+    }
+
+    // Adds a user ID to the list of all user IDs for the app.
+    fun addUserToUserList(userID: String) {
+        getUserList {
+            userList: MutableList<String> ->
+            if (!userList.contains(userID)) {
+                userList.add(userID)
+                val listData = mutableMapOf<String, Any?>()
+                listData["user_list"] = userList.toList()
+                firestoreDatabase
+                        .collection(USER_LIST)
+                        .document(USER_LIST)
+                        .set(listData)
+                        .addOnCompleteListener { task: Task<Void> ->
+                            if (task.isSuccessful) {
+                                Log.i("BackendManager", "Successfully Added User to List: " + userID)
+                            } else {
+                                Log.e("BackendManager", "Failed to Add User to List: " + task.exception)
+                            }
+                        }
             }
-        }, {
-            error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-            callback(null)
-        })
+        }
     }
 
 }
