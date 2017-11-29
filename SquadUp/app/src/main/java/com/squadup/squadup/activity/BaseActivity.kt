@@ -34,7 +34,6 @@ open class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as ApplicationManager
-        app.setup()
         getScreenDimensions()
     }
 
