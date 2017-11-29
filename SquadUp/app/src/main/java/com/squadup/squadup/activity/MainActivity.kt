@@ -21,7 +21,7 @@ class MainActivity : BaseActivity() {
      * [android.support.v4.app.FragmentStatePagerAdapter].
      */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
-    private var container: ViewPager? = null
+    private var container: ViewPager ?= null
     private var tabs: TabLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
