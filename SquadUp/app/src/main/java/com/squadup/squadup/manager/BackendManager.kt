@@ -150,7 +150,7 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a ready response message to users subscribed to a certain topic.
-    fun sendReadyResponseMessage(topic: String, senderID: String, senderName: String, receiverID: String, response: Boolean) {
+    fun sendReadyResponseMessage(topic: String, senderID: String, senderName: String, receiverID: String, res: Boolean) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
@@ -159,7 +159,7 @@ class BackendManager(context: Context?) {
         data.put("senderID", senderID)
         data.put("senderName", senderName)
         data.put("receiverID", receiverID)
-        data.put("response", response)
+        data.put("response", res)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
@@ -186,8 +186,49 @@ class BackendManager(context: Context?) {
         })
     }
 
+    fun sendAddedAsFriendMessage(recipient: String, senderID: String, senderName: String) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", recipient)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.ADDED_AS_FRIEND)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, { error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
+    fun sendAddedToGroupMessage(recipients: MutableList<String>, senderID: String, senderName: String, groupID: String, groupName: String) {
+        if (recipients.isEmpty()) {
+            return
+        }
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        val registrationTokens = JSONArray()
+        for (recipient in recipients) {
+            registrationTokens.put(recipient)
+        }
+        json.put("to", registrationTokens)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.ADDED_TO_GROUP)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        data.put("groupID", senderID)
+        data.put("groupName", senderName)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, { error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
     // Sends a push notification to users subscribed to a certain topic.
-    fun sendNotification(title: String, body: String, recipients: MutableList<String>) {
+    fun sendNotification(recipients: MutableList<String>, title: String, body: String) {
         if (recipients.isEmpty()) {
             return
         }

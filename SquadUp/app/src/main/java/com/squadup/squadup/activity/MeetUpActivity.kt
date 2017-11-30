@@ -26,6 +26,7 @@ import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.manager.PermissionManager
+import com.squadup.squadup.service.FirebaseMessageService
 
 /**
  * An activity to manage the map screen where members of a group can find a location to meet up.
@@ -143,11 +144,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private fun initializeBroadcastReceiver() {
         broadcastManager = LocalBroadcastManager.getInstance(this)
         val intentFilter = IntentFilter()
-        intentFilter.addAction(LOGIN_MESSAGE)
-        intentFilter.addAction(LOCATION_MESSAGE)
-        intentFilter.addAction(READY_REQUEST_MESSAGE)
-        intentFilter.addAction(READY_RESPONSE_MESSAGE)
-        intentFilter.addAction(READY_DECISION_MESSAGE)
+        intentFilter.addAction(FirebaseMessageService.LOGIN)
+        intentFilter.addAction(FirebaseMessageService.LOCATION)
+        intentFilter.addAction(FirebaseMessageService.READY_REQUEST)
+        intentFilter.addAction(FirebaseMessageService.READY_RESPONSE)
+        intentFilter.addAction(FirebaseMessageService.READY_DECISION)
         broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
         app.backend.startListening(group.id)
     }
@@ -325,7 +326,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             val icon = BitmapFactory.decodeResource(resources,
                         android.R.drawable.ic_menu_myplaces).copy(Bitmap.Config.ARGB_8888, true)
             val paint = Paint()
-            val filter = PorterDuffColorFilter(ContextCompat.getColor(this, R.color.medium_orange), PorterDuff.Mode.SRC_IN)
+            val filter = PorterDuffColorFilter(ContextCompat.getColor(this, R.color.medium_orange), PorterDuff.Mode.MULTIPLY)
             paint.colorFilter = filter
             val canvas = Canvas(icon)
             canvas.drawBitmap(icon, 0f, 0f, paint)
@@ -477,15 +478,15 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The receiver to handle any broadcasts from the FirebaseMessageService.
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == LOGIN_MESSAGE) {
+            if (intent.action == FirebaseMessageService.LOGIN) {
                 onLoginMessageReceived(intent)
-            } else if (intent.action == LOCATION_MESSAGE) {
+            } else if (intent.action == FirebaseMessageService.LOCATION) {
                 onLocationMessageReceived(intent)
-            } else if (intent.action == READY_REQUEST_MESSAGE) {
+            } else if (intent.action == FirebaseMessageService.READY_REQUEST) {
                 onReadyRequestMessageReceived(intent)
-            } else if (intent.action == READY_RESPONSE_MESSAGE) {
+            } else if (intent.action == FirebaseMessageService.READY_RESPONSE) {
                 onReadyResponseMessageReceived(intent)
-            } else if (intent.action == READY_DECISION_MESSAGE) {
+            } else if (intent.action == FirebaseMessageService.READY_DECISION) {
                 onReadyDecisionMessageReceived(intent)
             }
         }
@@ -601,7 +602,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
                     recipients.add(member.registrationToken!!)
                 }
             }
-            app.backend.sendNotification(group.id, "${user.name} (SquadUp)", recipients)
+            app.backend.sendNotification(recipients, group.id, "${user.name} (SquadUp)")
         }
     }
 

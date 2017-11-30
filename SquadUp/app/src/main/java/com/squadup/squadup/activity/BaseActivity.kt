@@ -21,15 +21,6 @@ import com.squadup.squadup.manager.ApplicationManager
  */
 open class BaseActivity : AppCompatActivity() {
 
-    companion object {
-        val TEXT_MESSAGE = "TEXT_MESSAGE"
-        val LOGIN_MESSAGE = "LOGIN_MESSAGE"
-        val LOCATION_MESSAGE = "LOCATION_MESSAGE"
-        val READY_REQUEST_MESSAGE = "READY_REQUEST_MESSAGE"
-        val READY_RESPONSE_MESSAGE = "READY_RESPONSE_MESSAGE"
-        val READY_DECISION_MESSAGE = "READY_DECISION_MESSAGE"
-    }
-
     // The application manager to manage global data.
     lateinit var app: ApplicationManager
 
@@ -62,6 +53,10 @@ open class BaseActivity : AppCompatActivity() {
         signOutButton = findViewById(R.id.sign_out_button)
         signOutButton.setOnClickListener {
             onSignOutButtonClick()
+        }
+        signOutButton.setOnLongClickListener {
+            showScreen(MeetUpActivity::class.java)
+            true
         }
     }
 

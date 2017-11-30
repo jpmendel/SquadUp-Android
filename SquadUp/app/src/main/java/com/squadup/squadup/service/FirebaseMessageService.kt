@@ -16,10 +16,11 @@ class FirebaseMessageService : FirebaseMessagingService() {
     companion object {
         val LOGIN = "LOGIN"
         val LOCATION = "LOCATION"
-        val TEXT = "TEXT"
         val READY_REQUEST = "READY_REQUEST"
         val READY_RESPONSE = "READY_RESPONSE"
         val READY_DECISION = "READY_DECISION"
+        val ADDED_AS_FRIEND = "ADDED_AS_FRIEND"
+        val ADDED_TO_GROUP = "ADDED_TO_GROUP"
     }
 
     // Handle a data message or push notification sent by another app.
@@ -37,11 +38,6 @@ class FirebaseMessageService : FirebaseMessagingService() {
                             message.data["senderID"]!!, message.data["senderName"]!!,
                             message.data["latitude"]!!.toDouble(), message.data["longitude"]!!.toDouble()
                     )
-                } else if (message.data["type"] == TEXT) {
-                    broadcastTextMessage(
-                            message.data["senderID"]!!, message.data["senderName"]!!,
-                            message.data["text"]!!
-                    )
                 } else if (message.data["type"] == READY_REQUEST) {
                     broadcastReadyRequestMessage(
                             message.data["senderID"]!!, message.data["senderName"]!!
@@ -56,6 +52,15 @@ class FirebaseMessageService : FirebaseMessagingService() {
                             message.data["senderID"]!!, message.data["senderName"]!!,
                             message.data["decision"]!!.toBoolean()
                     )
+                } else if (message.data["type"] == ADDED_AS_FRIEND) {
+                    broadcastAddedAsFriendMessage(
+                            message.data["senderID"]!!, message.data["senderName"]!!
+                    )
+                } else if (message.data["type"] == ADDED_TO_GROUP) {
+                    broadcastAddedToGroupMessage(
+                            message.data["senderID"]!!, message.data["senderName"]!!,
+                            message.data["groupID"]!!, message.data["groupName"]!!
+                    )
                 }
             }
             if (message.notification != null) {
@@ -64,17 +69,8 @@ class FirebaseMessageService : FirebaseMessagingService() {
         }
     }
 
-    // Broadcasts a text message so any activity listening for it can access the data.
-    private fun broadcastTextMessage(senderID: String, senderName: String, text: String) {
-        val intent = Intent(BaseActivity.TEXT_MESSAGE)
-        intent.putExtra("senderID", senderID)
-        intent.putExtra("senderName", senderName)
-        intent.putExtra("text", text)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
     private fun broadcastLoginMessage(senderID: String, senderName: String, latitude: Double, longitude: Double) {
-        val intent = Intent(BaseActivity.LOGIN_MESSAGE)
+        val intent = Intent(LOGIN)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         intent.putExtra("latitude", latitude)
@@ -83,7 +79,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
     }
 
     private fun broadcastLocationMessage(senderID: String, senderName: String, latitude: Double, longitude: Double) {
-        val intent = Intent(BaseActivity.LOCATION_MESSAGE)
+        val intent = Intent(LOCATION)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         intent.putExtra("latitude", latitude)
@@ -92,14 +88,14 @@ class FirebaseMessageService : FirebaseMessagingService() {
     }
 
     private fun broadcastReadyRequestMessage(senderID: String, senderName: String) {
-        val intent = Intent(BaseActivity.READY_REQUEST_MESSAGE)
+        val intent = Intent(READY_REQUEST)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
     private fun broadcastReadyResponseMessage(senderID: String, senderName: String, receiverID: String, response: Boolean) {
-        val intent = Intent(BaseActivity.READY_RESPONSE_MESSAGE)
+        val intent = Intent(READY_RESPONSE)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         intent.putExtra("receiverID", receiverID)
@@ -108,10 +104,26 @@ class FirebaseMessageService : FirebaseMessagingService() {
     }
 
     private fun broadcastReadyDecisionMessage(senderID: String, senderName: String, decision: Boolean) {
-        val intent = Intent(BaseActivity.READY_DECISION_MESSAGE)
+        val intent = Intent(READY_DECISION)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         intent.putExtra("decision", decision)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun broadcastAddedAsFriendMessage(senderID: String, senderName: String) {
+        val intent = Intent(ADDED_AS_FRIEND)
+        intent.putExtra("senderID", senderID)
+        intent.putExtra("senderName", senderName)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun broadcastAddedToGroupMessage(senderID: String, senderName: String, groupID: String, groupName: String) {
+        val intent = Intent(ADDED_TO_GROUP)
+        intent.putExtra("senderID", senderID)
+        intent.putExtra("senderName", senderName)
+        intent.putExtra("groupID", senderID)
+        intent.putExtra("groupName", senderName)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
