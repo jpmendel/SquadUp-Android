@@ -33,6 +33,7 @@ class MeetingLocationViewActivity : BaseActivity() {
     // Sets up all the views on the screen.
     override fun initializeViews() {
         super.initializeViews()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         meetingLocationText = findViewById(R.id.meeting_location_text)
         meetingLocationText.text = intent.extras.getString("meetingLocation")
         gotItButton = findViewById(R.id.got_it_button)
@@ -68,7 +69,7 @@ class MeetingLocationViewActivity : BaseActivity() {
 
     // Go back to the main screen when back is pressed.
     override fun onBackPressed() {
-        backToScreen(MessagingTestActivity::class.java)
+        backToScreen(MainActivity::class.java)
     }
 
 }

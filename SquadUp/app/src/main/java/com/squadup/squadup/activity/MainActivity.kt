@@ -1,4 +1,5 @@
 package com.squadup.squadup.activity
+
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
@@ -10,7 +11,6 @@ import com.squadup.squadup.R
 /**
  * Created by StephenHaberle on 11/27/17.
  */
-
 class MainActivity : BaseActivity() {
     /**
      * The [android.support.v4.view.PagerAdapter] that will provide
@@ -49,6 +49,10 @@ class MainActivity : BaseActivity() {
 
         //create those red varibales as members and find them in R here
 
+    }
+
+    override fun onBackPressed() {
+        // Don't allow users to back out of this screen.
     }
 
     /**
