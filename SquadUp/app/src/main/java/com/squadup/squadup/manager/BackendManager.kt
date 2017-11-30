@@ -74,24 +74,6 @@ class BackendManager(context: Context?) {
         Log.i("BackendManager", "Stopped listening to: " + topic)
     }
 
-    // Send a text message to a certain topic. Any users listening to that topic will receive the message.
-    fun sendTextMessage(topic: String, senderID: String, senderName: String, text: String) {
-        val json = JSONObject()
-        json.put("token", FirebaseIDService.getToken())
-        json.put("to", "/topics/" + topic)
-        val data = JSONObject()
-        data.put("type", FirebaseMessageService.TEXT)
-        data.put("senderID", senderID)
-        data.put("senderName", senderName)
-        data.put("text", text)
-        json.put("data", data)
-        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
-            Log.i("BackendManager", "Response: " + response)
-        }, { error: VolleyError? ->
-            Log.e("BackendManager", "Error: " + error)
-        })
-    }
-
     // Sends a login message to users subscribed to a certain topic.
     fun sendLoginMessage(topic: String, senderID: String, senderName: String, latitude: Double, longitude: Double) {
         val json = JSONObject()
