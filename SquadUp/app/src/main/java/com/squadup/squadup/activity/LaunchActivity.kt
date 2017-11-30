@@ -21,6 +21,11 @@ class LaunchActivity : BaseActivity() {
         app.setup()
         initializeViews()
         animationHandler.post(animateSplashImage)
+
+        //TODO: Note: sticking this call here since it takes a long time, but need to improve this methodology in the future.
+        app.backend.getUserList { userList: MutableList<String>? ->
+            app.userList = userList!!
+        }
         Handler().postDelayed({
             animationHandler.removeCallbacks(animateSplashImage)
             presentScreen(LoginActivity::class.java)

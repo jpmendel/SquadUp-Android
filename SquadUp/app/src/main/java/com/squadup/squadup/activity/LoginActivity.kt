@@ -132,6 +132,7 @@ class LoginActivity : BaseActivity() {
                     //send the user to the application manager
                     app.user = user
                 }
+            app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
             app.updateCurrentUserRegistration()
         }
     }

@@ -64,8 +64,8 @@ class MessagingTestActivity : BaseActivity() {
             app.backend.createUserRecord(app.user!!)
         }
         sendLoginButton.setOnLongClickListener {
-            app.user!!.friends.add("other@email.com")
-            app.user!!.friends.add("another@email.com")
+            app.user!!.friendIDs.add("other@email.com")
+            app.user!!.friendIDs.add("another@email.com")
             app.backend.createUserRecord(app.user!!)
             true
         }

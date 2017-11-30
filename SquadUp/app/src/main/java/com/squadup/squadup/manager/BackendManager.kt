@@ -3,7 +3,6 @@ package com.squadup.squadup.manager
 import android.content.Context
 import android.util.Log
 import com.android.volley.Request
-import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -11,7 +10,6 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.squadup.squadup.data.Constants
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.ServerData
 import com.squadup.squadup.data.User
@@ -255,7 +253,7 @@ class BackendManager(context: Context?) {
         val userData = mutableMapOf<String, Any?>()
         userData["id"] = user.id
         userData["name"] = user.name
-        userData["friends"] = user.friends.toList()
+        userData["friendIDs"] = user.friendIDs.toList()
         userData["groupIDs"] = user.groupIDs.toList()
         userData["registrationToken"] = user.registrationToken
         return userData
@@ -266,10 +264,10 @@ class BackendManager(context: Context?) {
         val id = document["id"] as String
         val name = document["name"] as String
         val user = User(id, name)
-        val friends = document["friends"] as? List<String>
+        val friends = document["friendIDs"] as? List<String>
         if (friends != null) {
             for (i in 0 until friends.count()) {
-                user.friends.add(friends[i])
+                user.friendIDs.add(friends[i])
             }
         }
         val groups = document["groupIDs"] as? List<String>
@@ -415,6 +413,26 @@ class BackendManager(context: Context?) {
             }
         }
         return group
+    }
+
+    //Pass in a given User object and update the user's "groups" and  "friends" variable.
+    //Returns the passed in user with the updated groups and friends field
+    fun retrieveUserGroupAndFriendInfo(user: User): User {
+        for (i in 0 until user.groupIDs.count()){
+            getGroupRecord(user.groupIDs[i]) {group: Group? ->
+                if(group != null){
+                    user.groups[i] = group
+                }
+            }
+        }
+        for (i in 0 until user.friendIDs.count()){
+            getUserRecord(user.friendIDs[i]) {user: User? ->
+                if(user != null){
+                    user.friends[i] = user
+                }
+            }
+        }
+        return user
     }
 
     // Retrieves the list of all user IDs for the app.

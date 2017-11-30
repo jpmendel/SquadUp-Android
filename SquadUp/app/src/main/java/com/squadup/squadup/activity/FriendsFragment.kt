@@ -6,9 +6,12 @@ package com.squadup.squadup.activity
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import com.squadup.squadup.R
 
 
@@ -29,8 +32,16 @@ class FriendsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
+        val view = inflater!!.inflate(R.layout.friends_frag, container, false)
+        Log.i("FriendFragment", (view.context as BaseActivity).app.userList.toString())
+        val adapter = ArrayAdapter<String>(view.context,
+                android.R.layout.simple_dropdown_item_1line, (view.context as BaseActivity).app.userList)
+        view.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView).setAdapter(adapter)
+        view.findViewById<AutoCompleteTextView>(R.id.autoCompleteTextView).threshold = 1
+
         // Inflate the layout for this fragment
-        return inflater!!.inflate(R.layout.friends_frag, container, false)
+        return view
     }
 
     companion object {
