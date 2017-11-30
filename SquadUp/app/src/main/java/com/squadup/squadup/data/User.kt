@@ -6,7 +6,9 @@ class User(id: String, name: String) {
 
     var name: String = name
 
-    var friends: MutableList<String> = mutableListOf()
+    var friendIDs: MutableList<String> = mutableListOf()
+
+    var friends: MutableList<User> = mutableListOf()
 
     var groupIDs: MutableList<String> = mutableListOf()
 

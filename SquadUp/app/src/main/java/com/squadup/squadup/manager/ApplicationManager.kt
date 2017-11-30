@@ -17,6 +17,9 @@ class ApplicationManager : Application() {
 
     var group: Group = Group("GROUP01", "Dream Team")
 
+    //list of user Emails
+    var userList: MutableList<String> = mutableListOf()
+
     // Sets up all the initial data for the application.
     fun setup() {
         backend = BackendManager(applicationContext)

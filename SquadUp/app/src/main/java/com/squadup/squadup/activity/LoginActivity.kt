@@ -57,11 +57,11 @@ class LoginActivity : BaseActivity() {
             Log.i("Login", "Account ID " + account.id)
 
 
-            //TODO Add user to the backend array if they're not already there.
+            //Add user to the backend array if they're not already there.
             app.backend.addUserToUserList(account.email!!)
             setUserGlobal(account)
             Handler().postDelayed({
-                showScreen(MessagingTestActivity::class.java)
+                showScreen(MainActivity::class.java)
             }, 1000)
         } else {
             Toast.makeText(this,
@@ -119,6 +119,7 @@ class LoginActivity : BaseActivity() {
                     app.user = user!!
                     app.updateCurrentUserRegistration()
                 }
+            app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
         }
 
     }
