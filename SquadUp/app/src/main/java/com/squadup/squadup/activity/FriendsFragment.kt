@@ -12,6 +12,8 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
 import android.text.Editable
+import android.text.InputType
+import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +24,10 @@ import com.squadup.squadup.data.User
 import com.squadup.squadup.utilities.FriendListAdpater
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
+import com.squadup.squadup.data.Group
+import com.squadup.squadup.utilities.DialogSelectedFriendsAdapter
 import kotlinx.android.synthetic.main.friend_frag_row.view.*
+import java.util.*
 
 
 /**
@@ -58,7 +63,7 @@ class FriendsFragment : Fragment() {
 
     private lateinit var createGroupButton: FloatingActionButton
 
-    private lateinit var groupName : TextView
+    private lateinit var groupName : EditText
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.friends_frag, container, false)
@@ -170,39 +175,59 @@ class FriendsFragment : Fragment() {
                 }
             }
             //pass these items to a new layout inflater: where a request is made to name and create a group
-
             fun buildView(): LinearLayout{
-                val groupCreator : LinearLayout = LinearLayout(activity.applicationContext)
+                val groupCreator : LinearLayout = LinearLayout(baseActivity)
                 groupCreator.orientation = LinearLayout.VERTICAL
 
 
-
-
                 //load all selected friends to be visually appealing
-                val adapterUserFriends = FriendListAdpater(activity.applicationContext, selectedFriends)
-                var selectedFriends : ListView = ListView(activity.applicationContext)
-                selectedFriends.adapter = adapterUserFriends
+                val adapterUsersSelected = DialogSelectedFriendsAdapter(baseActivity, selectedFriends)
 
-
-
-//                var cb : CheckBox
-//                toppingCheckBoxes = Array(pizza_toppings.values().size) {idx ->
-//                    cb = CheckBox(this)
-//                    cb.setText(pizza_toppings.values()[idx].title)
-//                    toppingList.addView(cb)
+                var selectedFriends : ListView = ListView(baseActivity)
+                selectedFriends.adapter = adapterUsersSelected
+                groupCreator.removeAllViews()
                 groupCreator.addView(groupName)
                 groupCreator.addView(selectedFriends)
                 return groupCreator
             }
 
-            val groupCreationDialogBuilder = AlertDialog.Builder(activity.applicationContext, R.style.Base_ThemeOverlay_AppCompat_Dialog_Alert)
+            val groupCreationDialogBuilder = AlertDialog.Builder(baseActivity, R.style.Base_ThemeOverlay_AppCompat_Dialog_Alert)
             var dialogView = buildView()
             groupCreationDialogBuilder.setView(dialogView)
             val posClick = { dialog: DialogInterface, id: Int ->
                 Toast.makeText(baseActivity, "Create group: " + groupName.text, Toast.LENGTH_SHORT).show()
+
+
+                //TODO Handle adding groups functionality here!
+                //create the new group, add the userIDs, and send it to the backend
+                var createdGroup = Group(groupName.text.toString() + "-" + UUID.randomUUID().toString(), groupName.text.toString())
+                //add members to group
+                createdGroup.memberIDs.add(baseActivity.app.user!!.id)
+                createdGroup.members.add(baseActivity.app.user!!)
+
+                //add group to user
+                baseActivity.app.user!!.groupIDs.add(createdGroup.id)
+                baseActivity.app.user!!.groups.add(createdGroup)
+
+                //add group to selected users
+                for (position in 0 until selectedFriends.count()){
+                    createdGroup.memberIDs.add(selectedFriends[position].id)
+                    createdGroup.members.add(selectedFriends[position])
+                    selectedFriends[position].groupIDs.add(createdGroup.id)
+                    selectedFriends[position].groups.add(createdGroup)
+                }
+
+                //update the backend for all users and the group involved
+                baseActivity.app.backend.createGroupRecord(createdGroup)
+                baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
+                for (position in 0 until selectedFriends.count()){
+                    baseActivity.app.backend.createUserRecord(selectedFriends[position])
+                }
+                //that's it for now, then work on transistion to GroupFragment?
             }
             val negClick = { dialog: DialogInterface, id: Int ->
-
+                dialogView.removeAllViews()
+                groupName.text.clear()
             }
             groupCreationDialogBuilder.setPositiveButton("Create Group", posClick)
             groupCreationDialogBuilder.setNegativeButton("Cancel", negClick)
@@ -221,7 +246,7 @@ class FriendsFragment : Fragment() {
         createGroupButton = baseActivity.findViewById(R.id.fabCreateGroup)
         addFriendTextField = baseActivity.findViewById(R.id.autoCompleteTextView)
         addFriendButton = baseActivity.findViewById(R.id.addFriendBtn)
-        groupName = TextView(baseActivity.applicationContext)
+        groupName = EditText(baseActivity)
         groupName.hint = "Choose a name for your group..."
     }
 
