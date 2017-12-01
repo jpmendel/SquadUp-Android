@@ -8,6 +8,8 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import com.squadup.squadup.R
 
 
@@ -21,20 +23,32 @@ import com.squadup.squadup.R
  */
 class GroupsFragment : Fragment() {
 
-    // TODO: Rename and change types of parameters
-    private var mParam1: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (arguments != null) {
-            mParam1 = arguments.getString(ARG_ITEM_NUMBER)
-        }
-    }
+    
+    private lateinit var baseActivity: BaseActivity
+    private lateinit var groupsList: ListView
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater!!.inflate(R.layout.groups_frag, container, false)
     }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        initializeViews()
+
+        val groupsListAdapter = ArrayAdapter<String>(baseActivity,
+                android.R.layout.simple_dropdown_item_1line, baseActivity.app.user!!.groupIDs)
+        groupsList.adapter = groupsListAdapter
+        groupsList.isClickable = true
+
+    }
+
+    private fun initializeViews(){
+        baseActivity = activity as BaseActivity
+        groupsList = baseActivity.findViewById(R.id.groupsListView)
+    }
+
+
 
     companion object {
         // TODO: Rename parameter arguments, choose names that match
