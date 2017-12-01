@@ -79,6 +79,9 @@ class FriendsFragment : Fragment() {
         val adapterUserFriends = ArrayAdapter<String>(baseActivity,
                 android.R.layout.simple_dropdown_item_1line, baseActivity.app.user!!.friendIDs)
         friendList.adapter = adapterUserFriends
+        friendList.isClickable = true
+
+
 
 
         //////////////////////////////////////////////////////////////////

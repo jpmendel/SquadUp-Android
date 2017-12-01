@@ -1,5 +1,6 @@
 package com.squadup.squadup.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
@@ -109,11 +110,14 @@ class LoginActivity : BaseActivity() {
         if (requestCode == RC_SIGN_IN) {
             // The Task returned from this call is always completed, no need to attach
             // a listener.
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account = task.getResult(ApiException::class.java)
+            if (resultCode == Activity.RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                val account = task.getResult(ApiException::class.java)
+                updateUI(account)
+            }
 
             // Signed in successfully, show authenticated UI.
-            updateUI(account)
+
         }
     }
 
