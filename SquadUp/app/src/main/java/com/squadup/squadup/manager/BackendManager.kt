@@ -401,22 +401,26 @@ class BackendManager(context: Context?) {
 
     //Pass in a given User object and update the user's "groups" and  "friends" variable.
     //Returns the passed in user with the updated groups and friends field
-    fun retrieveUserGroupAndFriendInfo(user: User): User {
-        for (i in 0 until user.groupIDs.count()){
-            getGroupRecord(user.groupIDs[i]) { group: Group? ->
+    fun retrieveUserGroupAndFriendInfo(updateUser: User): User {
+        for (i in 0 until updateUser.groupIDs.count()){
+            getGroupRecord(updateUser.groupIDs[i]) { group: Group? ->
                 if (group != null){
-                    user.groups.add(group)
+                    updateUser.groups.add(group)
                 }
             }
         }
-        for (i in 0 until user.friendIDs.count()){
-            getUserRecord(user.friendIDs[i]) { user: User? ->
+        Log.i("Backend", "Friend Count: " + updateUser.friendIDs.count())
+        for (i in 0 until updateUser.friendIDs.count()){
+            Log.i("Backend", "There was an attempt")
+            getUserRecord(updateUser.friendIDs[i]) { user: User? ->
+                Log.i("Backend", "Access Friend attempt")
                 if (user != null){
-                    user.friends.add(user)
+                    Log.i("Backend", "Adding friend: " + user.id)
+                    updateUser.friends.add(user)
                 }
             }
         }
-        return user
+        return updateUser
     }
 
     // Retrieves the list of all user IDs for the app.
