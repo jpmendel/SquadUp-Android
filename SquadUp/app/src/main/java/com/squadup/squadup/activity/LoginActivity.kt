@@ -94,7 +94,6 @@ class LoginActivity : BaseActivity() {
             Log.i("Login", "Email " + account.email)
             Log.i("Login", "Account ID " + account.id)
             setUserGlobal(account)
-            showScreen(MainActivity::class.java)
         }
     }
 
@@ -137,6 +136,7 @@ class LoginActivity : BaseActivity() {
                 }
             app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
             app.updateCurrentUserRegistration()
+            showScreen(MainActivity::class.java)
         }
     }
 
