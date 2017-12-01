@@ -147,6 +147,14 @@ class FriendsFragment : Fragment() {
                         friendAdded!!.friends.add(baseActivity.app.user!!)
                         baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
                         baseActivity.app.backend.createUserRecord(friendAdded!!)
+
+                        // Send a message alerting the added person that you have added them.
+                        if (friendAdded!!.registrationToken != null) {
+                            baseActivity.app.backend.sendAddedAsFriendMessage(
+                                    friendAdded!!.registrationToken!!,
+                                    baseActivity.app.user!!.id, baseActivity.app.user!!.name
+                            )
+                        }
                     } else {
                         Toast.makeText(baseActivity, "User email does not exist. Try again.", Toast.LENGTH_SHORT).show()
                     }
@@ -171,19 +179,14 @@ class FriendsFragment : Fragment() {
             }
             //pass these items to a new layout inflater: where a request is made to name and create a group
 
-            fun buildView(): LinearLayout{
-                val groupCreator : LinearLayout = LinearLayout(activity.applicationContext)
+            fun buildView(): LinearLayout {
+                val groupCreator = LinearLayout(activity.applicationContext)
                 groupCreator.orientation = LinearLayout.VERTICAL
-
-
-
 
                 //load all selected friends to be visually appealing
                 val adapterUserFriends = FriendListAdpater(activity.applicationContext, selectedFriends)
                 var selectedFriends : ListView = ListView(activity.applicationContext)
                 selectedFriends.adapter = adapterUserFriends
-
-
 
 //                var cb : CheckBox
 //                toppingCheckBoxes = Array(pizza_toppings.values().size) {idx ->
@@ -210,9 +213,6 @@ class FriendsFragment : Fragment() {
             groupCreationDialogBuilder.create().show()
 
         }
-
-
-
     }
 
     private fun initializeViews() {
@@ -223,6 +223,15 @@ class FriendsFragment : Fragment() {
         addFriendButton = baseActivity.findViewById(R.id.addFriendBtn)
         groupName = TextView(baseActivity.applicationContext)
         groupName.hint = "Choose a name for your group..."
+    }
+
+    fun onShowFragment() {
+        Log.i("FriendsFragment", "Fragment Selected")
+        refreshData()
+    }
+
+    fun refreshData() {
+
     }
 
 }// Required empty public constructor

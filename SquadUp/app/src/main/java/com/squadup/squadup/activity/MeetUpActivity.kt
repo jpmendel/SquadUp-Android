@@ -116,8 +116,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     }
 
     // Runs when the activity is closed and removed from memory.
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         stopAnimatingText()
         app.backend.stopListening(group.id)
         broadcastManager.unregisterReceiver(broadcastReceiver)

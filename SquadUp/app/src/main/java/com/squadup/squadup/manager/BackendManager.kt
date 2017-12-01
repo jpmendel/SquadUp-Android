@@ -388,31 +388,36 @@ class BackendManager(context: Context?) {
 
     // Pass in a given Group with only the list of the member IDs
     // Returns a Group with each of the Users pulled from the backend
-    fun getGroupData(group: Group): Group {
+    fun retrieveGroupMemberInfo(group: Group) {
+        group.members = mutableListOf()
         for (i in 0 until group.memberIDs.count()) {
-            getUserRecord(group.memberIDs[i]) { user: User? ->
+            getUserRecord(group.memberIDs[i]) {
+                user: User? ->
                 if (user != null) {
                     group.members.add(user)
                 }
             }
         }
-        return group
     }
 
     //Pass in a given User object and update the user's "groups" and  "friends" variable.
     //Returns the passed in user with the updated groups and friends field
-    fun retrieveUserGroupAndFriendInfo(updateUser: User): User {
+    fun retrieveUserGroupAndFriendInfo(updateUser: User) {
+        updateUser.groups = mutableListOf()
         for (i in 0 until updateUser.groupIDs.count()){
-            getGroupRecord(updateUser.groupIDs[i]) { group: Group? ->
+            getGroupRecord(updateUser.groupIDs[i]) {
+                group: Group? ->
                 if (group != null){
                     updateUser.groups.add(group)
                 }
             }
         }
         Log.i("Backend", "Friend Count: " + updateUser.friendIDs.count())
+        updateUser.friends = mutableListOf()
         for (i in 0 until updateUser.friendIDs.count()){
             Log.i("Backend", "There was an attempt")
-            getUserRecord(updateUser.friendIDs[i]) { user: User? ->
+            getUserRecord(updateUser.friendIDs[i]) {
+                user: User? ->
                 Log.i("Backend", "Access Friend attempt")
                 if (user != null){
                     Log.i("Backend", "Adding friend: " + user.id)
@@ -420,7 +425,6 @@ class BackendManager(context: Context?) {
                 }
             }
         }
-        return updateUser
     }
 
     // Retrieves the list of all user IDs for the app.

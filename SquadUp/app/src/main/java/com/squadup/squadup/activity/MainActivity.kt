@@ -1,81 +1,191 @@
 package com.squadup.squadup.activity
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.ViewPager
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
+import android.util.Log
+import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
+import android.widget.TabHost
+import android.widget.Toast
 import com.squadup.squadup.R
+import com.squadup.squadup.data.Group
+import com.squadup.squadup.data.User
+import com.squadup.squadup.service.FirebaseMessageService
 
-/**
- * Created by StephenHaberle on 11/27/17.
- */
 class MainActivity : BaseActivity() {
-    /**
-     * The [android.support.v4.view.PagerAdapter] that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * [android.support.v4.app.FragmentStatePagerAdapter].
-     */
-    private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
-    private var container: ViewPager ?= null
-    private var tabs: TabLayout? = null
+
+    private val GROUPS_FRAGMENT = "Groups"
+
+    private val FRIENDS_FRAGMENT = "Friends"
+
+    private lateinit var tabs: TabLayout
+
+    private lateinit var groupsFragmentFrame: FrameLayout
+
+    private lateinit var groupsFragment: GroupsFragment
+
+    private lateinit var friendsFragmentFrame: FrameLayout
+
+    private lateinit var friendsFragment: FriendsFragment
+
+    private lateinit var broadcastManager: LocalBroadcastManager
+
+    private lateinit var currentFragment: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         initializeViews()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        refreshUserData()
+        initializeBroadcastReceiver()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
     override fun initializeViews() {
         super.initializeViews()
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
-
-        container = findViewById(R.id.container)
         tabs = findViewById(R.id.tabs)
+        tabs.addOnTabSelectedListener(tabChangeListener)
+        groupsFragmentFrame = findViewById(R.id.groups_fragment_frame)
+        groupsFragment = GroupsFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.groups_fragment_frame, groupsFragment)
+                .commit()
+        friendsFragmentFrame = findViewById(R.id.friends_fragment_frame)
+        friendsFragment = FriendsFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.friends_fragment_frame, friendsFragment)
+                .commit()
+        friendsFragmentFrame.translationX = screenWidth
+        currentFragment = GROUPS_FRAGMENT
+    }
 
-        // Set up the ViewPager with the sections adapter.
-        container!!.adapter = mSectionsPagerAdapter
+    // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
+    private fun initializeBroadcastReceiver() {
+        broadcastManager = LocalBroadcastManager.getInstance(this)
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
+        intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
+        broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
+    }
 
-        container!!.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
-        tabs!!.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(container))
-
-        //create those red varibales as members and find them in R here
-
+    private fun refreshUserData() {
+        if (app.user != null) {
+            app.backend.getUserRecord(app.user!!.id) {
+                user: User? ->
+                if (user != null) {
+                    app.user = user
+                    app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
+                    friendsFragment.refreshData()
+                    groupsFragment.refreshData()
+                }
+            }
+        }
     }
 
     override fun onBackPressed() {
         // Don't allow users to back out of this screen.
     }
 
-    /**
-     * A [FragmentPagerAdapter] that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
-
-        override fun getItem(position: Int): Fragment {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            when (position) {
-                0 -> return GroupsFragment.newInstance()
-                1 -> return FriendsFragment.newInstance()
+    // The receiver to handle any broadcasts from the FirebaseMessageService.
+    private val broadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
+                onAddedAsFriendMessageReceived(intent)
             }
-            throw IllegalStateException("getItem error -- invalid position")
+            if (intent.action == FirebaseMessageService.ADDED_TO_GROUP) {
+                onAddedToGroupMessageReceived(intent)
+            }
+        }
+    }
+
+    private fun onAddedAsFriendMessageReceived(intent: Intent) {
+        val senderID = intent.getStringExtra("senderID")
+        val senderName = intent.getStringExtra("senderName")
+        if (app.user != null) {
+            app.user!!.friendIDs.add(senderID)
+            app.backend.getUserRecord(senderID) {
+                user: User? ->
+                if (user != null) {
+                    app.user!!.friends.add(user)
+                    friendsFragment.refreshData()
+                }
+            }
+        }
+        Toast.makeText(baseContext, "$senderName added you as a friend!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun onAddedToGroupMessageReceived(intent: Intent) {
+        val groupID = intent.getStringExtra("groupID")
+        val groupName = intent.getStringExtra("groupName")
+        if (app.user != null) {
+            app.user!!.groupIDs.add(groupID)
+            app.backend.getGroupRecord(groupID) {
+                group: Group? ->
+                if (group != null) {
+                    app.user!!.groups.add(group)
+                    groupsFragment.refreshData()
+                }
+            }
+        }
+        Toast.makeText(baseContext, "You have been added to the group: $groupName!", Toast.LENGTH_SHORT).show()
+    }
+
+    private val tabChangeListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            if (tab != null) {
+                if (tab.text == GROUPS_FRAGMENT) {
+                    currentFragment = GROUPS_FRAGMENT
+                    // Animate out the friends fragment.
+                    friendsFragmentFrame.animate()
+                            .setInterpolator(DecelerateInterpolator())
+                            .translationX(screenWidth)
+                            .duration = 300
+                    // Animate in the groups fragment.
+                    groupsFragmentFrame.animate()
+                            .setInterpolator(DecelerateInterpolator())
+                            .translationX(0f)
+                            .duration = 300
+                    groupsFragment.onShowFragment()
+                } else if (tab.text == FRIENDS_FRAGMENT) {
+                    currentFragment = FRIENDS_FRAGMENT
+                    // Animate out the groups fragment.
+                    groupsFragmentFrame.animate()
+                            .setInterpolator(DecelerateInterpolator())
+                            .translationX(-screenWidth)
+                            .duration = 300
+                    // Animate in the friends fragment.
+                    friendsFragmentFrame.animate()
+                            .setInterpolator(DecelerateInterpolator())
+                            .translationX(0f)
+                            .duration = 300
+                    friendsFragment.onShowFragment()
+                }
+            }
         }
 
-        override fun getCount(): Int {
-            return 2
-        }
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
     }
 
 }

@@ -137,9 +137,9 @@ class LoginActivity : BaseActivity() {
                 } else {
                     //send the user to the application manager
                     Log.i("LoginActivity", "Old user!!!")
-                    app.user = user!!
+                    app.user = user
                 }
-            app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
+            app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
             //TODO: Figure out a better way to avoid having to call Thread.sleep
             Thread.sleep(1000)
             app.updateCurrentUserRegistration()
@@ -152,9 +152,9 @@ class LoginActivity : BaseActivity() {
             val imageView = ImageView(baseContext)
             val icon = ResourcesCompat.getDrawable(
                     resources, android.R.drawable.ic_menu_myplaces, null)
-            icon!!.setColorFilter(ResourcesCompat.getColor(
-                    resources, R.color.medium_orange, null), PorterDuff.Mode.MULTIPLY)
             imageView.setImageDrawable(icon)
+            imageView.setColorFilter(ResourcesCompat.getColor(
+                    resources, R.color.medium_orange, null), PorterDuff.Mode.MULTIPLY)
             imageView.visibility = View.VISIBLE
             imageView.alpha = 0f
             val params = LinearLayout.LayoutParams(80, 80)

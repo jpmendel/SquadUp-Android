@@ -1,19 +1,13 @@
 package com.squadup.squadup.utilities
 
-import android.content.ClipData
-import android.widget.ArrayAdapter
-import android.support.v4.app.NotificationCompat.getCategory
-import android.R.attr.description
-import android.widget.TextView
-import android.content.ClipData.Item
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.TextView
 import com.squadup.squadup.R
 import com.squadup.squadup.data.User
-
 
 /**
  * Created by Jason on 11/30/2017.
@@ -21,15 +15,10 @@ import com.squadup.squadup.data.User
  * Helpful Video: https://www.youtube.com/watch?v=P2I8PGLZEVc
  */
 
-class FriendListAdpater(context : Context, friends: MutableList<User>) : BaseAdapter(){
+class FriendListAdpater(context: Context, friends: MutableList<User>) : BaseAdapter() {
 
-    val adapterContext : Context
-    val adapterFriends : MutableList<User>
-
-    init {
-        adapterContext = context
-        adapterFriends = friends
-    }
+    val adapterContext: Context = context
+    val adapterFriends: MutableList<User> = friends
 
     //renders each row
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
