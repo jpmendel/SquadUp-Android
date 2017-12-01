@@ -367,7 +367,7 @@ class BackendManager(context: Context?) {
         for (i in 0 until group.memberIDs.count()) {
             getUserRecord(group.memberIDs[i]) { user: User? ->
                 if (user != null) {
-                    group.members[i] = user
+                    group.members.add(user)
                 }
             }
         }
@@ -380,14 +380,14 @@ class BackendManager(context: Context?) {
         for (i in 0 until user.groupIDs.count()){
             getGroupRecord(user.groupIDs[i]) {group: Group? ->
                 if(group != null){
-                    user.groups[i] = group
+                    user.groups.add(group)
                 }
             }
         }
         for (i in 0 until user.friendIDs.count()){
             getUserRecord(user.friendIDs[i]) {user: User? ->
                 if(user != null){
-                    user.friends[i] = user
+                    user.friends.add(user)
                 }
             }
         }

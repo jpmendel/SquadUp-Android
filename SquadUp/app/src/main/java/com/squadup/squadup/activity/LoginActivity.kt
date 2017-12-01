@@ -105,9 +105,11 @@ class LoginActivity : BaseActivity() {
     //
     fun setUserGlobal(account: GoogleSignInAccount?){
         val userID = account!!.email
+        Log.i("Login", userID!!)
         app.backend.getUserRecord(userID!!) {
             user: User? ->
                 if (user == null) {
+                    Log.i("LoginActivity", "New user!!!")
                     //create the user object, send it to the backend and application manager
                     var newUser = User(account.email!!, account.displayName!!)
                     app.backend.createUserRecord(newUser)
@@ -116,6 +118,7 @@ class LoginActivity : BaseActivity() {
                 }
                 else{
                     //send the user to the application manager
+                    Log.i("LoginActivity", "Old user!!!")
                     app.user = user!!
                     app.updateCurrentUserRegistration()
                 }
