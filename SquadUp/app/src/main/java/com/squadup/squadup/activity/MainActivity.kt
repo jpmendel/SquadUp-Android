@@ -5,19 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.os.Handler
 import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.content.LocalBroadcastManager
-import android.support.v4.view.ViewPager
-import android.util.Log
-import android.view.ViewGroup
-import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
-import android.widget.TabHost
 import android.widget.Toast
 import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
@@ -48,6 +39,7 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
+        broadcastManager = LocalBroadcastManager.getInstance(this)
     }
 
     override fun onStart() {
@@ -81,7 +73,6 @@ class MainActivity : BaseActivity() {
 
     // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
     private fun initializeBroadcastReceiver() {
-        broadcastManager = LocalBroadcastManager.getInstance(this)
         val intentFilter = IntentFilter()
         intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
         intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
@@ -94,9 +85,10 @@ class MainActivity : BaseActivity() {
                 user: User? ->
                 if (user != null) {
                     app.user = user
-                    app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
-                    friendsFragment.refreshData()
-                    groupsFragment.refreshData()
+                    app.backend.getGroupAndFriendDataForUser(app.user!!) {
+                        friendsFragment.refreshData()
+                        groupsFragment.refreshData()
+                    }
                 }
             }
         }

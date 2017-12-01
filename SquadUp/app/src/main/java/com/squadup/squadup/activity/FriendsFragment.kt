@@ -20,7 +20,7 @@ import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.utilities.DialogSelectedFriendsAdapter
 import com.squadup.squadup.utilities.FriendListAdpater
-import kotlinx.android.synthetic.main.friend_frag_row.view.*
+import kotlinx.android.synthetic.main.row_friend.view.*
 import java.util.*
 
 /**
@@ -59,7 +59,7 @@ class FriendsFragment : Fragment() {
     private lateinit var groupName : EditText
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater!!.inflate(R.layout.friends_frag, container, false)
+        return inflater!!.inflate(R.layout.fragment_friends, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

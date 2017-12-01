@@ -60,5 +60,17 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="40dp" />
+
+        <ProgressBar
+            android:id="@+id/loading_bar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/sign_in_button"
+            android:layout_alignParentBottom="false"
+            android:layout_alignTop="@+id/sign_in_button"
+            android:layout_centerHorizontal="true"
+            android:visibility="invisible" />
+
     </RelativeLayout>
 </RelativeLayout>

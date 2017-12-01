@@ -386,9 +386,8 @@ class BackendManager(context: Context?) {
                 }
     }
 
-    // Pass in a given Group with only the list of the member IDs
-    // Returns a Group with each of the Users pulled from the backend
-    fun retrieveGroupMemberInfo(group: Group) {
+    // Pass in a given Group with only the list of the member IDs and get data for each member.
+    fun getMemberInfoForGroup(group: Group, callback: (() -> Unit)? = null) {
         group.members = mutableListOf()
         for (i in 0 until group.memberIDs.count()) {
             getUserRecord(group.memberIDs[i]) {
@@ -396,13 +395,17 @@ class BackendManager(context: Context?) {
                 if (user != null) {
                     group.members.add(user)
                 }
+                if (i == group.memberIDs.count() - 1) {
+                    if (callback != null) {
+                        callback()
+                    }
+                }
             }
         }
     }
 
-    //Pass in a given User object and update the user's "groups" and  "friends" variable.
-    //Returns the passed in user with the updated groups and friends field
-    fun retrieveUserGroupAndFriendInfo(updateUser: User) {
+    // Pass in a given User object and update the user's "groups" and "friends" variable.
+    fun getGroupAndFriendDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
         updateUser.groups = mutableListOf()
         for (i in 0 until updateUser.groupIDs.count()){
             getGroupRecord(updateUser.groupIDs[i]) {
@@ -422,6 +425,11 @@ class BackendManager(context: Context?) {
                 if (user != null){
                     Log.i("Backend", "Adding friend: " + user.id)
                     updateUser.friends.add(user)
+                }
+                if (i == updateUser.friendIDs.count() - 1) {
+                    if (callback != null) {
+                        callback()
+                    }
                 }
             }
         }

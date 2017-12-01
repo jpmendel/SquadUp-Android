@@ -23,7 +23,7 @@ class FriendListAdpater(context: Context, friends: MutableList<User>) : BaseAdap
     //renders each row
     override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val layoutInflater = LayoutInflater.from(adapterContext)
-        val rows = layoutInflater.inflate(R.layout.friend_frag_row, viewGroup, false)
+        val rows = layoutInflater.inflate(R.layout.row_friend, viewGroup, false)
 
         rows.findViewById<TextView>(R.id.textViewFriendListName).text = adapterFriends[position].name
         rows.findViewById<TextView>(R.id.textViewFriendListEmail).text = adapterFriends[position].id
