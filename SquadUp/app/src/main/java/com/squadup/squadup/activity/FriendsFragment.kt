@@ -62,6 +62,9 @@ class FriendsFragment : Fragment() {
 //        Thread.sleep(5000)
         //TODO also remove all of a given user's' friends from the list
         baseActivity.app.userList.remove(baseActivity.app.user!!.id)
+        for (i in 0 until baseActivity.app.user!!.friendIDs.size){
+            baseActivity.app.userList.remove(baseActivity.app.user!!.friendIDs[i])
+        }
         Log.i("FriendFragment", baseActivity.app.userList.toString())
         val adapterUserEmails = ArrayAdapter<String>(baseActivity,
                 android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
