@@ -94,7 +94,6 @@ class LoginActivity : BaseActivity() {
             Log.i("Login", "Email " + account.email)
             Log.i("Login", "Account ID " + account.id)
             setUserGlobal(account)
-            showScreen(MainActivity::class.java)
         }
     }
 
@@ -123,6 +122,7 @@ class LoginActivity : BaseActivity() {
         Log.i("Login", userID!!)
         app.backend.getUserRecord(userID!!) {
             user: User? ->
+            Log.i("LoginActivity", "Here now?")
                 if (user == null) {
                     Log.i("LoginActivity", "New user!!!")
                     //create the user object, send it to the backend and application manager
@@ -132,11 +132,12 @@ class LoginActivity : BaseActivity() {
                     app.user = newUser
                 } else {
                     //send the user to the application manager
-
-                    app.user = user
+                    Log.i("LoginActivity", "Old user!!!")
+                    app.user = user!!
                 }
             app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
             app.updateCurrentUserRegistration()
+            showScreen(MainActivity::class.java)
         }
     }
 
