@@ -166,6 +166,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a message letting a user know you have added them as a friend.
     fun sendAddedAsFriendMessage(recipient: String, senderID: String, senderName: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
@@ -182,6 +183,7 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a message letting the members of a group know you created the group.
     fun sendAddedToGroupMessage(recipients: MutableList<String>, senderID: String, senderName: String, groupID: String, groupName: String) {
         if (recipients.isEmpty()) {
             return
@@ -401,15 +403,15 @@ class BackendManager(context: Context?) {
     //Returns the passed in user with the updated groups and friends field
     fun retrieveUserGroupAndFriendInfo(user: User): User {
         for (i in 0 until user.groupIDs.count()){
-            getGroupRecord(user.groupIDs[i]) {group: Group? ->
-                if(group != null){
+            getGroupRecord(user.groupIDs[i]) { group: Group? ->
+                if (group != null){
                     user.groups.add(group)
                 }
             }
         }
         for (i in 0 until user.friendIDs.count()){
-            getUserRecord(user.friendIDs[i]) {user: User? ->
-                if(user != null){
+            getUserRecord(user.friendIDs[i]) { user: User? ->
+                if (user != null){
                     user.friends.add(user)
                 }
             }

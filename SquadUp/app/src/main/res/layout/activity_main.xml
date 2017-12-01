@@ -20,7 +20,10 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbar">
+        android:layout_below="@+id/toolbar"
+        android:background="@color/medium_blue"
+        app:tabSelectedTextColor="@android:color/white"
+        app:tabTextColor="@android:color/white">
 
         <android.support.design.widget.TabItem
             android:id="@+id/tabItem"
