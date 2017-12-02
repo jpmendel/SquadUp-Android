@@ -264,7 +264,7 @@ class BackendManager(context: Context?) {
     }
 
     // Creates or updates a user record in the Firestore database backend.
-    fun createUserRecord(user: User) {
+    fun createUserRecord(user: User, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(USER_COLLECTION)
                 .document(user.id)
@@ -275,11 +275,14 @@ class BackendManager(context: Context?) {
                     } else {
                         Log.e("BackendManager", "Failed to Create User: " + task.exception)
                     }
+                    if (callback != null) {
+                        callback()
+                    }
                 }
     }
 
     // Deletes a user record in the Firestore database backend.
-    fun deleteUserRecord(userID: String) {
+    fun deleteUserRecord(userID: String, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(USER_COLLECTION)
                 .document(userID)
@@ -289,6 +292,9 @@ class BackendManager(context: Context?) {
                         Log.i("BackendManager", "Successfully Deleted User: " + userID)
                     } else {
                         Log.e("BackendManager", "Failed to Delete User: " + task.exception)
+                    }
+                    if (callback != null) {
+                        callback()
                     }
                 }
     }
@@ -337,7 +343,7 @@ class BackendManager(context: Context?) {
     }
 
     // Creates or updates a user record in the Firestore database backend.
-    fun createGroupRecord(group: Group) {
+    fun createGroupRecord(group: Group, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(GROUP_COLLECTION)
                 .document(group.id)
@@ -348,11 +354,14 @@ class BackendManager(context: Context?) {
                     } else {
                         Log.e("BackendManager", "Failed to Create Group: " + task.exception)
                     }
+                    if (callback != null) {
+                        callback()
+                    }
                 }
     }
 
     // Deletes a user record in the Firestore database backend.
-    fun deleteGroupRecord(groupID: String) {
+    fun deleteGroupRecord(groupID: String, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(GROUP_COLLECTION)
                 .document(groupID)
@@ -362,6 +371,9 @@ class BackendManager(context: Context?) {
                         Log.i("BackendManager", "Successfully Deleted Group: " + groupID)
                     } else {
                         Log.e("BackendManager", "Failed to Delete Group: " + task.exception)
+                    }
+                    if (callback != null) {
+                        callback()
                     }
                 }
     }

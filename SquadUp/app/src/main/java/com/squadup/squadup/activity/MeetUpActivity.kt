@@ -156,18 +156,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Resets any values associated with the activity.
     private fun resetValues() {
-        // Group view screen should allocate member data and then set to ApplicationManager.
-        //user = app.user <- Should be this.
-        //group = app.group <- Should be this.
-        user = User("jacob", "Jacob Mendelowitz")
-        group = Group("squad-up", "SquadUp")
-        group.memberIDs = mutableListOf("jacob", "jason", "stephen", "eric")
-        group.members = mutableListOf(
-                User("jacob", "Jacob Mendelowitz"),
-                User("jason", "Jason Corriveau"),
-                User("stephen", "Stephen Haberle"),
-                User("eric", "Eric Marshall")
-        )
+        user = app.user!!
+        group = app.group!!
         locations = mutableMapOf()
         locationMarkers = mutableMapOf()
         readyResponses = mutableListOf()

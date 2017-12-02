@@ -120,8 +120,10 @@ class FriendsFragment : Fragment() {
                             android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
                     addFriendTextField.setAdapter(adapterUserEmailsUpdate)
 
+                    Log.i("FriendsFragment", "Jason: " + user.registrationToken)
                     // Send a message alerting the added person that you have added them.
                     if (user.registrationToken != null) {
+                        Log.i("FriendsFragment", "SENT MESSAGE")
                         baseActivity.app.backend.sendAddedAsFriendMessage(
                                 user.registrationToken!!,
                                 baseActivity.app.user!!.id, baseActivity.app.user!!.name

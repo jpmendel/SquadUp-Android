@@ -35,7 +35,8 @@ class GroupViewActivity : BaseActivity() {
         RecyclerViewMembers.adapter = memberAdapter
         RecyclerViewMembers.layoutManager = layoutManager
         RecyclerViewMembers.adapter.notifyDataSetChanged()
-        findViewById<FloatingActionButton>(R.id.floatingActionButtonMeetUp).setOnClickListener { view : View ->
+        findViewById<FloatingActionButton>(R.id.floatingActionButtonMeetUp).setOnClickListener {
+            view : View ->
             Handler().postDelayed({
                 showScreen(MeetUpActivity::class.java)
             }, 0)
