@@ -2,6 +2,7 @@ package com.squadup.squadup.activity
 
 import android.os.Bundle
 import android.os.Handler
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -34,15 +35,19 @@ class GroupViewActivity : BaseActivity() {
         RecyclerViewMembers.adapter = memberAdapter
         RecyclerViewMembers.layoutManager = layoutManager
         RecyclerViewMembers.adapter.notifyDataSetChanged()
-
+        findViewById<FloatingActionButton>(R.id.floatingActionButtonMeetUp).setOnClickListener { view : View ->
+            Handler().postDelayed({
+                showScreen(MeetUpActivity::class.java)
+            }, 0)
+        }
     }
 
-    fun meetUp(view: View){
-        Handler().postDelayed({
-            //TODO: Change this screen to the meet-up screen once master has been updated.
-            showScreen(MeetUpActivity::class.java)
-        }, 0)
-    }
+//    fun meetUp(view: View){
+//        Handler().postDelayed({
+//            //TODO: Change this screen to the meet-up screen once master has been updated.
+//            showScreen(MeetUpActivity::class.java)
+//        }, 0)
+//    }
 
 
     class MemberAdapter(members: ArrayList<String>) : RecyclerView.Adapter<MemberAdapter.ViewHolder>() {
