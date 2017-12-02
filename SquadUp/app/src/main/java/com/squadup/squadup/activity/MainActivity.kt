@@ -14,6 +14,10 @@ import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.service.FirebaseMessageService
+import android.widget.EditText
+import android.view.MotionEvent
+
+
 
 class MainActivity : BaseActivity() {
 
@@ -142,6 +146,7 @@ class MainActivity : BaseActivity() {
         Toast.makeText(baseContext, "You have been added to the group: $groupName!", Toast.LENGTH_SHORT).show()
     }
 
+    // Exchanges fragments depending on which tab is clicked on.
     private val tabChangeListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab?) {
             if (tab != null) {
@@ -179,6 +184,24 @@ class MainActivity : BaseActivity() {
         override fun onTabUnselected(tab: TabLayout.Tab?) {}
 
         override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
+
+    // Makes it so that any click outside the add friend text entry will close the keyboard
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val view = currentFocus
+        if (view != null) {
+           if ((event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_MOVE) && view is EditText) {
+               val position = IntArray(2)
+               view.getLocationOnScreen(position)
+               val x = event.rawX + view.left - position[0]
+               val y = event.rawY + view.top - position[1]
+               if (x < view.left || x > view.right || y < view.top || y > view.bottom) {
+                   view.clearFocus()
+                   hideKeyboard()
+               }
+           }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
 }

@@ -52,8 +52,6 @@ class FriendsFragment : Fragment() {
 
     private lateinit var createGroupButton: FloatingActionButton
 
-    var selectedFriends: MutableList<User> = mutableListOf()
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_friends, container, false)
     }
@@ -140,8 +138,6 @@ class FriendsFragment : Fragment() {
     }
 
     private fun onCreateGroupButtonClick() {
-        // TODO: Can be greatly simplified with AlertDialog.Builder()
-
         val inputContainer = LinearLayout(baseActivity)
         inputContainer.orientation = LinearLayout.VERTICAL
         val groupNameInput = EditText(baseActivity)
@@ -151,10 +147,16 @@ class FriendsFragment : Fragment() {
         params.leftMargin = resources.getDimensionPixelSize(R.dimen.dialog_margin)
         params.rightMargin = resources.getDimensionPixelSize(R.dimen.dialog_margin)
         groupNameInput.layoutParams = params
+        val selectedFriends = mutableListOf(baseActivity.app.user!!)
+        for (friend in baseActivity.app.user!!.friends) {
+            if (friend.selected) {
+                selectedFriends.add(friend)
+            }
+        }
         val memberList = ListView(baseActivity)
         memberList.adapter = DialogSelectedFriendsAdapter(baseActivity, selectedFriends)
-        inputContainer.addView(groupNameInput)
         inputContainer.addView(memberList)
+        inputContainer.addView(groupNameInput)
         AlertDialog.Builder(baseActivity)
                 .setTitle("Squad Up")
                 .setMessage("Enter the name for the group:")
@@ -201,12 +203,7 @@ class FriendsFragment : Fragment() {
     }
 
     fun selectFriend(friend: User) {
-        if (!selectedFriends.contains(friend)){
-            selectedFriends.add(friend)
-        } else {
-            selectedFriends.remove(friend)
-        }
-        baseActivity.hideKeyboard()
+        friend.selected = !friend.selected
     }
 
     fun removeFriend(friend: User) {
@@ -229,6 +226,9 @@ class FriendsFragment : Fragment() {
     }
 
     fun onShowFragment() {
+        for (friend in baseActivity.app.user!!.friends) {
+            friend.selected = false
+        }
         refreshData()
     }
 

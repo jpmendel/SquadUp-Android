@@ -35,13 +35,18 @@ class FriendListAdapter(activity: BaseActivity, fragment: FriendsFragment, frien
         friendName.text = friend.name
         val friendEmail = returnView.findViewById<TextView>(R.id.friend_email)
         friendEmail.text = friend.id
+        val friendBackground = returnView.findViewById<View>(R.id.friend_background)
+        if (friend.selected) {
+            friendBackground.alpha = 1.0f
+        } else {
+            friendBackground.alpha = 0.0f
+        }
         returnView.setOnClickListener {
             fragment.selectFriend(friend)
-            val friendBackground = returnView.findViewById<LinearLayout>(R.id.friend_background)
-            if (!fragment.selectedFriends.contains(friend)) {
-                friendBackground.setBackgroundResource(android.R.color.holo_green_dark)
+            if (friend.selected) {
+                friendBackground.animate().alpha(1.0f).duration = 200
             } else {
-                friendBackground.setBackgroundResource(android.R.color.white)
+                friendBackground.animate().alpha(0.0f).duration = 200
             }
         }
         returnView.setOnLongClickListener {
