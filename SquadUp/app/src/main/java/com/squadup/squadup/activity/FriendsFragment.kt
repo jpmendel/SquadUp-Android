@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +20,7 @@ import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.utilities.DialogSelectedFriendsAdapter
-import com.squadup.squadup.utilities.FriendListAdpater
+import com.squadup.squadup.utilities.FriendListAdapter
 import kotlinx.android.synthetic.main.row_friend.view.*
 import java.util.*
 
@@ -34,13 +35,6 @@ import java.util.*
 class FriendsFragment : Fragment() {
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @return A new instance of fragment FriendsFragment.
-         */
         fun newInstance(): FriendsFragment {
             return FriendsFragment()
         }
@@ -50,13 +44,15 @@ class FriendsFragment : Fragment() {
 
     private lateinit var friendList: ListView
 
+    private lateinit var friendListAdapter: FriendListAdapter
+
     private lateinit var addFriendTextField: AutoCompleteTextView
 
     private lateinit var addFriendButton: Button
 
     private lateinit var createGroupButton: FloatingActionButton
 
-    private lateinit var groupName : EditText
+    var selectedFriends: MutableList<User> = mutableListOf()
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_friends, container, false)
@@ -65,13 +61,29 @@ class FriendsFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initializeViews()
+        setupButtons()
+        setupAutoCompleteTextField()
+        setupFriendList()
+    }
 
-        //////////////////////////////////////////////////////////////////
-        //                    Handling AutoCompleteTextView             //
-        //////////////////////////////////////////////////////////////////
-        //set up the AutoCompleteTextView for finding friends
-//        Thread.sleep(5000)
-        //TODO also remove all of a given user's' friends from the list
+    private fun initializeViews() {
+        baseActivity = activity as BaseActivity
+        friendList = baseActivity.findViewById(R.id.friendListView)
+        createGroupButton = baseActivity.findViewById(R.id.fabCreateGroup)
+        addFriendTextField = baseActivity.findViewById(R.id.autoCompleteTextView)
+        addFriendButton = baseActivity.findViewById(R.id.addFriendBtn)
+    }
+
+    private fun setupButtons() {
+        addFriendButton.setOnClickListener {
+            onAddFriendButtonClick()
+        }
+        createGroupButton.setOnClickListener {
+            onCreateGroupButtonClick()
+        }
+    }
+
+    private fun setupAutoCompleteTextField() {
         baseActivity.app.userList.remove(baseActivity.app.user!!.id)
         for (i in 0 until baseActivity.app.user!!.friendIDs.size){
             baseActivity.app.userList.remove(baseActivity.app.user!!.friendIDs[i])
@@ -82,174 +94,142 @@ class FriendsFragment : Fragment() {
         addFriendTextField.setAdapter(adapterUserEmails)
         addFriendTextField.maxLines = 1
         addFriendTextField.threshold = 1
+    }
 
-        //////////////////////////////////////////////////////////////////
-        //                    Handling FriendList                       //
-        //////////////////////////////////////////////////////////////////
-        //load all of a users friends into the friend list
-//        val adapterUserFriends = ArrayAdapter<String>(baseActivity,
-//                android.R.layout.simple_dropdown_item_1line, baseActivity.app.user!!.friendIDs)
-
-
+    private fun setupFriendList() {
         Log.i("FriendFragment", "User friends: " + baseActivity.app.user!!.friends)
-        val adapterUserFriends = FriendListAdpater(activity.applicationContext, baseActivity.app.user!!.friends)
+        friendListAdapter = FriendListAdapter(baseActivity, this, baseActivity.app.user!!.friends)
+        friendList.adapter = friendListAdapter
+    }
 
-        //setup onclick listener
-        friendList.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-        val mItemClickedListener = OnItemClickListener { parent, v, position, id ->
-            Log.i("FriendFragment", "number of items selected: " + friendList.checkedItemCount)
-            Log.i("FriendFragment", "Item selected: " + baseActivity.app.user!!.friends[position].id)
-            parent.getChildAt(position).checkBoxFriendListSelected.isChecked = !parent.getChildAt(position).checkBoxFriendListSelected.isChecked
-//            friendList.setSelection(position)
-//            friendList
-        }
-        friendList.adapter = adapterUserFriends
-        friendList.onItemClickListener = mItemClickedListener
+    private fun onAddFriendButtonClick() {
+        val friendEmail = addFriendTextField.text.toString()
+        Log.i("FriendFragment", friendEmail)
+        //check if selected friend exists
+        if (friendEmail.isNotEmpty()) {
+            baseActivity.app.backend.getUserRecord(friendEmail) {
+                user: User? ->
+                if (user != null) {
+                    baseActivity.app.backend.addFriend(baseActivity.app.user!!, user)
+                    refreshData()
 
-        //////////////////////////////////////////////////////////////////
-        //                    Handling AddFriend                       //
-        //////////////////////////////////////////////////////////////////
-        //Set onClick listener for the "add friend" button
-        addFriendButton.setOnClickListener {
-            val friendEmail = addFriendTextField.text.toString()
-            Log.i("FriendFragment", friendEmail)
-            //check if selected friend exists
-            var friendAdded: User?
-            if (friendEmail.length > 0) {
-                baseActivity.app.backend.getUserRecord(friendEmail) { user: User? ->
-                    if (user != null) {
-                        Log.i("FriendFragment", "DNE")
-                        friendAdded = user
-                        //add friend to user's list
-                        baseActivity.app.user!!.friends.add(friendAdded!!)
-                        baseActivity.app.user!!.friendIDs.add(friendAdded!!.id)
-                        //notify the friendList Adapater
-                        adapterUserFriends.notifyDataSetChanged()
+                    //clear the name from the autoCompleteTextView
+                    addFriendTextField.text.clear()
 
-                        //clear the name from the autoCompleteTextView
-                        addFriendTextField.text.clear()
+                    //remove the name from autoCompleteTextViewAdapter and notify it
+                    baseActivity.app.userList.remove(friendEmail)
+                    val adapterUserEmailsUpdate = ArrayAdapter<String>(baseActivity,
+                            android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
+                    addFriendTextField.setAdapter(adapterUserEmailsUpdate)
 
-                        //remove the name from autoCompleteTextViewAdapter and notify it
-                        baseActivity.app.userList.remove(friendEmail)
-                        val adapterUserEmailsUpdate = ArrayAdapter<String>(baseActivity,
-                                android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
-                        addFriendTextField.setAdapter(adapterUserEmailsUpdate)
-
-                        //add User to friend's friends and update user on backend
-                        friendAdded!!.friendIDs.add(baseActivity.app.user!!.id)
-                        friendAdded!!.friends.add(baseActivity.app.user!!)
-                        baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
-                        baseActivity.app.backend.createUserRecord(friendAdded!!)
-
-                        // Send a message alerting the added person that you have added them.
-                        if (friendAdded!!.registrationToken != null) {
-                            baseActivity.app.backend.sendAddedAsFriendMessage(
-                                    friendAdded!!.registrationToken!!,
-                                    baseActivity.app.user!!.id, baseActivity.app.user!!.name
-                            )
-                        }
-                    } else {
-                        Toast.makeText(baseActivity, "User email does not exist. Try again.", Toast.LENGTH_SHORT).show()
+                    // Send a message alerting the added person that you have added them.
+                    if (user.registrationToken != null) {
+                        baseActivity.app.backend.sendAddedAsFriendMessage(
+                                user.registrationToken!!,
+                                baseActivity.app.user!!.id, baseActivity.app.user!!.name
+                        )
                     }
+                } else {
+                    Toast.makeText(baseActivity, "User does not exist. Try again.", Toast.LENGTH_SHORT).show()
                 }
             }
-            else{
-                Toast.makeText(baseActivity, "User email does not exist. Try again.", Toast.LENGTH_SHORT).show()
-            }
+        } else {
+            Toast.makeText(baseActivity, "User does not exist. Try again.", Toast.LENGTH_SHORT).show()
         }
-
-        //////////////////////////////////////////////////////////////////
-        //                    Handling FAB                              //
-        //////////////////////////////////////////////////////////////////
-        createGroupButton.setOnClickListener {
-            //find all items in the list view that have been "checked off"
-            var selectedFriends : MutableList<User> = mutableListOf()
-            for (position in 0 until friendList.count){
-                if (friendList.getChildAt(position).checkBoxFriendListSelected.isChecked){
-                    Log.i("FriendFragment", "Checked Friend is: " + friendList.getChildAt(position).textViewFriendListName.text)
-                    selectedFriends.add(baseActivity.app.user!!.friends[position])
-                }
-            }
-            //pass these items to a new layout inflater: where a request is made to name and create a group
-            fun buildView(): LinearLayout{
-                val groupCreator : LinearLayout = LinearLayout(baseActivity)
-                groupCreator.orientation = LinearLayout.VERTICAL
-
-
-                //load all selected friends to be visually appealing
-                val adapterUsersSelected = DialogSelectedFriendsAdapter(baseActivity, selectedFriends)
-
-                var selectedFriends : ListView = ListView(baseActivity)
-                selectedFriends.adapter = adapterUsersSelected
-                groupCreator.removeAllViews()
-                groupCreator.addView(groupName)
-                groupCreator.addView(selectedFriends)
-                return groupCreator
-            }
-
-            val groupCreationDialogBuilder = AlertDialog.Builder(baseActivity, R.style.Base_ThemeOverlay_AppCompat_Dialog_Alert)
-            var dialogView = buildView()
-            groupCreationDialogBuilder.setView(dialogView)
-            val posClick = { dialog: DialogInterface, id: Int ->
-                Toast.makeText(baseActivity, "Create group: " + groupName.text, Toast.LENGTH_SHORT).show()
-
-
-                //TODO Handle adding groups functionality here!
-                //create the new group, add the userIDs, and send it to the backend
-                var createdGroup = Group(groupName.text.toString() + "-" + UUID.randomUUID().toString(), groupName.text.toString())
-                //add members to group
-                createdGroup.memberIDs.add(baseActivity.app.user!!.id)
-                createdGroup.members.add(baseActivity.app.user!!)
-
-                //add group to user
-                baseActivity.app.user!!.groupIDs.add(createdGroup.id)
-                baseActivity.app.user!!.groups.add(createdGroup)
-
-                //add group to selected users
-                for (position in 0 until selectedFriends.count()){
-                    createdGroup.memberIDs.add(selectedFriends[position].id)
-                    createdGroup.members.add(selectedFriends[position])
-                    selectedFriends[position].groupIDs.add(createdGroup.id)
-                    selectedFriends[position].groups.add(createdGroup)
-                }
-
-                //update the backend for all users and the group involved
-                baseActivity.app.backend.createGroupRecord(createdGroup)
-                baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
-                for (position in 0 until selectedFriends.count()){
-                    baseActivity.app.backend.createUserRecord(selectedFriends[position])
-                }
-                //that's it for now, then work on transistion to GroupFragment?
-            }
-            val negClick = { dialog: DialogInterface, id: Int ->
-                dialogView.removeAllViews()
-                groupName.text.clear()
-            }
-            groupCreationDialogBuilder.setPositiveButton("Create Group", posClick)
-            groupCreationDialogBuilder.setNegativeButton("Cancel", negClick)
-
-            groupCreationDialogBuilder.create().show()
-
-        }
+        baseActivity.hideKeyboard()
     }
 
-    private fun initializeViews() {
-        baseActivity = activity as BaseActivity
-        friendList = baseActivity.findViewById(R.id.friendListView)
-        createGroupButton = baseActivity.findViewById(R.id.fabCreateGroup)
-        addFriendTextField = baseActivity.findViewById(R.id.autoCompleteTextView)
-        addFriendButton = baseActivity.findViewById(R.id.addFriendBtn)
-        groupName = EditText(baseActivity)
-        groupName.hint = "Choose a name for your group..."
-    }
+    private fun onCreateGroupButtonClick() {
+        // TODO: Can be greatly simplified with AlertDialog.Builder()
 
-    fun onShowFragment() {
-        Log.i("FriendsFragment", "Fragment Selected")
-        refreshData()
+        val inputContainer = LinearLayout(baseActivity)
+        inputContainer.orientation = LinearLayout.VERTICAL
+        val groupNameInput = EditText(baseActivity)
+        groupNameInput.hint = "Enter group name"
+        groupNameInput.setSingleLine()
+        val params = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        params.leftMargin = resources.getDimensionPixelSize(R.dimen.dialog_margin)
+        params.rightMargin = resources.getDimensionPixelSize(R.dimen.dialog_margin)
+        groupNameInput.layoutParams = params
+        val memberList = ListView(baseActivity)
+        memberList.adapter = DialogSelectedFriendsAdapter(baseActivity, selectedFriends)
+        inputContainer.addView(groupNameInput)
+        inputContainer.addView(memberList)
+        AlertDialog.Builder(baseActivity)
+                .setTitle("Squad Up")
+                .setMessage("Enter the name for the group:")
+                .setView(inputContainer)
+                .setPositiveButton("OK", {
+                    _: DialogInterface, _: Int ->
+                    Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
+                    //TODO Handle adding groups functionality here!
+                    //create the new group, add the userIDs, and send it to the backend
+                    val groupID = groupNameInput.toString() + "-" + UUID.randomUUID().toString()
+                    val createdGroup = Group(groupID, groupNameInput.text.toString())
+                    //add members to group
+                    createdGroup.memberIDs.add(baseActivity.app.user!!.id)
+                    createdGroup.members.add(baseActivity.app.user!!)
+
+                    //add group to user
+                    baseActivity.app.user!!.groupIDs.add(createdGroup.id)
+                    baseActivity.app.user!!.groups.add(createdGroup)
+
+                    //add group to selected users
+                    for (friend in selectedFriends){
+                        createdGroup.memberIDs.add(friend.id)
+                        createdGroup.members.add(friend)
+                        friend.groupIDs.add(createdGroup.id)
+                        friend.groups.add(createdGroup)
+                    }
+
+                    //update the backend for all users and the group involved
+                    baseActivity.app.backend.createGroupRecord(createdGroup)
+                    baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
+                    for (friend in selectedFriends){
+                        baseActivity.app.backend.createUserRecord(friend)
+                    }
+                    //that's it for now, then work on transition to GroupFragment?
+                })
+                .setNegativeButton("Cancel", {
+                    _: DialogInterface, _: Int ->
+                })
+                .show()
     }
 
     fun refreshData() {
-
+        friendListAdapter.updateDataSet(baseActivity.app.user!!.friends)
     }
 
-}// Required empty public constructor
+    fun selectFriend(friend: User) {
+        if (!selectedFriends.contains(friend)){
+            selectedFriends.add(friend)
+        } else {
+            selectedFriends.remove(friend)
+        }
+        baseActivity.hideKeyboard()
+    }
+
+    fun removeFriend(friend: User) {
+        val user = baseActivity.app.user
+        if (user != null) {
+            AlertDialog.Builder(baseActivity)
+                    .setTitle("Squad Up")
+                    .setMessage("Delete this friend?")
+                    .setPositiveButton("Yes", {
+                        dialogInterface: DialogInterface?, i: Int ->
+                        baseActivity.app.backend.unfriend(user, friend)
+                        baseActivity.app.userList.add(friend.id)
+                        refreshData()
+                    })
+                    .setNegativeButton("No", {
+                        dialogInterface: DialogInterface?, i: Int ->
+                    })
+                    .show()
+        }
+    }
+
+    fun onShowFragment() {
+        refreshData()
+    }
+
+}

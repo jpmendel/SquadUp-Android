@@ -145,6 +145,7 @@ class MainActivity : BaseActivity() {
     private val tabChangeListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab?) {
             if (tab != null) {
+                hideKeyboard()
                 if (tab.text == GROUPS_FRAGMENT) {
                     currentFragment = GROUPS_FRAGMENT
                     // Animate out the friends fragment.
