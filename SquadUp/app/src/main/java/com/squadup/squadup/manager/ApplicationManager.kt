@@ -31,6 +31,10 @@ class ApplicationManager : Application() {
             if (user!!.registrationToken != FirebaseIDService.getToken()) {
                 user!!.registrationToken = FirebaseIDService.getToken()
                 backend.createUserRecord(user!!, callback)
+            } else {
+                if (callback != null) {
+                    callback()
+                }
             }
         }
     }
