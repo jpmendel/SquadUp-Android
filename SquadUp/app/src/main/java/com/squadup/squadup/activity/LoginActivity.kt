@@ -140,6 +140,8 @@ class LoginActivity : BaseActivity() {
                     app.user = user!!
                 }
             app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
+            //TODO: Figure out a better way to avoid having to call Thread.sleep
+            Thread.sleep(1000)
             app.updateCurrentUserRegistration()
             showScreen(MainActivity::class.java)
         }
