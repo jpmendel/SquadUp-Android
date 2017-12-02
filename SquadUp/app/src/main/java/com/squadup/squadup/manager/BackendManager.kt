@@ -260,6 +260,7 @@ class BackendManager(context: Context?) {
                 user.groupIDs.add(groups[i])
             }
         }
+        user.registrationToken = document["registrationToken"] as String?
         return user
     }
 
