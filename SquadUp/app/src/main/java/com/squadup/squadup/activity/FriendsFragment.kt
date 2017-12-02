@@ -189,9 +189,19 @@ class FriendsFragment : Fragment() {
                     //update the backend for all users and the group involved
                     baseActivity.app.backend.createGroupRecord(createdGroup)
                     baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
+                    val recipients = mutableListOf<String>()
                     for (friend in selectedFriends){
                         baseActivity.app.backend.createUserRecord(friend)
+                        if (friend.registrationToken != null) {
+                            recipients.add(friend.registrationToken!!)
+                        }
                     }
+
+                    baseActivity.app.backend.sendAddedToGroupMessage(
+                            recipients,
+                            baseActivity.app.user!!.id, baseActivity.app.user!!.name,
+                            createdGroup.id, createdGroup.name
+                    )
                     //that's it for now, then work on transition to GroupFragment?
                 })
                 .setNegativeButton("Cancel", {
