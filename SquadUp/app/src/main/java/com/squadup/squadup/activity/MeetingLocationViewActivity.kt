@@ -6,6 +6,7 @@ import android.widget.TextView
 import com.squadup.squadup.R
 import android.content.Intent
 import android.net.Uri
+import android.widget.ImageView
 
 /**
  * An activity to display the meeting location to the user and provide options to get directions
@@ -52,7 +53,7 @@ class MeetingLocationViewActivity : BaseActivity() {
 
     // Return to the menu when the user clicks the got it button.
     private fun onGotItButtonClick() {
-        backToScreen(MessagingTestActivity::class.java)
+        backToScreen(MainActivity::class.java)
     }
 
     // Open the Google Maps app and provide the user with directions.

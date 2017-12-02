@@ -16,4 +16,6 @@ class User(id: String, name: String) {
 
     var registrationToken: String? = null
 
+    var selected: Boolean = false
+
 }

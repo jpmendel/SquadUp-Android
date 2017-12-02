@@ -63,14 +63,14 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The button used to continue to the next screen.
     private lateinit var continueButton: Button
 
-    // Manages receiving broadcast messages from the FirebaseMessageService.
-    private lateinit var broadcastManager: LocalBroadcastManager
-
     // The current user of the app on this device.
     private lateinit var user: User
 
     // The group the user is trying to meet with.
     private lateinit var group: Group
+
+    // Manages receiving broadcast messages from the FirebaseMessageService.
+    private lateinit var broadcastManager: LocalBroadcastManager
 
     // Manages the requesting of location updates.
     private lateinit var locationManager: LocationManager
@@ -112,12 +112,13 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         initializeViews()
         resetValues()
         setupButtons()
+        broadcastManager = LocalBroadcastManager.getInstance(this)
         loadGoogleMap()
     }
 
     // Runs when the activity is closed and removed from memory.
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         stopAnimatingText()
         app.backend.stopListening(group.id)
         broadcastManager.unregisterReceiver(broadcastReceiver)
@@ -127,6 +128,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     override fun initializeViews() {
         super.initializeViews()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        hideSignOut()
         mapFrame = findViewById(R.id.map_frame)
         statusText = findViewById(R.id.status_text)
         loadingImage = findViewById(R.id.loading_image)
@@ -142,7 +144,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
     private fun initializeBroadcastReceiver() {
-        broadcastManager = LocalBroadcastManager.getInstance(this)
         val intentFilter = IntentFilter()
         intentFilter.addAction(FirebaseMessageService.LOGIN)
         intentFilter.addAction(FirebaseMessageService.LOCATION)
@@ -208,6 +209,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             initializeLocationManager()
         } else {
             PermissionManager.requestLocationPermission(this)
+            startAnimatingLoadingImage()
+            statusText.text = "Enable Location Services..."
         }
     }
 
@@ -471,6 +474,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             addLineToMap(centerPoint, meetingLocation!!.value)
             addMeetingLocationToMap(meetingLocation!!.key, meetingLocation!!.value)
             statusText.text = "Squad Up!"
+            map.uiSettings.isScrollGesturesEnabled = true
+            map.uiSettings.isZoomGesturesEnabled = true
             animateSwitchButtons()
         }, 1000L + locations.values.count() * 500L)
     }

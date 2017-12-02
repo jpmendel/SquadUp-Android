@@ -21,8 +21,8 @@ import com.squadup.squadup.R
 import com.squadup.squadup.data.User
 import java.util.*
 import android.graphics.BitmapFactory
-import android.graphics.Bitmap
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
+import android.widget.ProgressBar
 
 class LoginActivity : BaseActivity() {
 
@@ -37,6 +37,8 @@ class LoginActivity : BaseActivity() {
     private lateinit var mainLayout: RelativeLayout
 
     private lateinit var campusMapImage: ImageView
+
+    private lateinit var loadingBar: ProgressBar
 
     private val animationHandler: Handler = Handler()
 
@@ -87,6 +89,7 @@ class LoginActivity : BaseActivity() {
         val roundedMap = RoundedBitmapDrawableFactory.create(resources, bitmapIcon)
         roundedMap.cornerRadius = 800f
         campusMapImage.setImageDrawable(roundedMap)
+        loadingBar = findViewById(R.id.loading_bar)
     }
 
     private fun updateUI(account: GoogleSignInAccount?){
@@ -94,7 +97,12 @@ class LoginActivity : BaseActivity() {
             Log.i("Login", "User Name " + account.displayName)
             Log.i("Login", "Email " + account.email)
             Log.i("Login", "Account ID " + account.id)
+            signInButton.visibility = View.INVISIBLE
+            loadingBar.visibility = View.VISIBLE
             setUserGlobal(account)
+        } else {
+            loadingBar.visibility = View.INVISIBLE
+            signInButton.visibility = View.VISIBLE
         }
     }
 
@@ -137,13 +145,12 @@ class LoginActivity : BaseActivity() {
                 } else {
                     //send the user to the application manager
                     Log.i("LoginActivity", "Old user!!!")
-                    app.user = user!!
+                    app.user = user
                 }
-            app.user = app.backend.retrieveUserGroupAndFriendInfo(app.user!!)
-            //TODO: Figure out a better way to avoid having to call Thread.sleep
-            Thread.sleep(1000)
-            app.updateCurrentUserRegistration()
-            showScreen(MainActivity::class.java)
+            app.backend.getGroupAndFriendDataForUser(app.user!!) {
+                app.updateCurrentUserRegistration()
+                showScreen(MainActivity::class.java)
+            }
         }
     }
 
@@ -152,9 +159,9 @@ class LoginActivity : BaseActivity() {
             val imageView = ImageView(baseContext)
             val icon = ResourcesCompat.getDrawable(
                     resources, android.R.drawable.ic_menu_myplaces, null)
-            icon!!.setColorFilter(ResourcesCompat.getColor(
-                    resources, R.color.medium_orange, null), PorterDuff.Mode.MULTIPLY)
             imageView.setImageDrawable(icon)
+            imageView.setColorFilter(ResourcesCompat.getColor(
+                    resources, R.color.medium_orange, null), PorterDuff.Mode.MULTIPLY)
             imageView.visibility = View.VISIBLE
             imageView.alpha = 0f
             val params = LinearLayout.LayoutParams(80, 80)

@@ -42,13 +42,6 @@ class GroupViewActivity : BaseActivity() {
         }
     }
 
-//    fun meetUp(view: View){
-//        Handler().postDelayed({
-//            //TODO: Change this screen to the meet-up screen once master has been updated.
-//            showScreen(MeetUpActivity::class.java)
-//        }, 0)
-//    }
-
 
     class MemberAdapter(members: ArrayList<String>) : RecyclerView.Adapter<MemberAdapter.ViewHolder>() {
         var memberList: ArrayList<String>

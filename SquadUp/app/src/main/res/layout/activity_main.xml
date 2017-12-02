@@ -11,8 +11,6 @@
     <include
         android:id="@+id/toolbar"
         layout="@layout/toolbar"
-        layout_height="wrap_content"
-        layout_width="match_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
@@ -26,23 +24,33 @@
         app:tabTextColor="@android:color/white">
 
         <android.support.design.widget.TabItem
-            android:id="@+id/tabItem"
+            android:id="@+id/groups_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tab_text_1" />
 
         <android.support.design.widget.TabItem
-            android:id="@+id/tabItem2"
+            android:id="@+id/friends_tab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tab_text_2" />
 
     </android.support.design.widget.TabLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/container"
+    <FrameLayout
+        android:id="@+id/groups_fragment_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/tabs" />
+        android:layout_below="@+id/tabs">
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/friends_fragment_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tabs">
+
+    </FrameLayout>
 
 </RelativeLayout>

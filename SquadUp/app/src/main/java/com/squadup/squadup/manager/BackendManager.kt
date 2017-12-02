@@ -386,41 +386,53 @@ class BackendManager(context: Context?) {
                 }
     }
 
-    // Pass in a given Group with only the list of the member IDs
-    // Returns a Group with each of the Users pulled from the backend
-    fun getGroupData(group: Group): Group {
+    // Pass in a given Group with only the list of the member IDs and get data for each member.
+    fun getMemberInfoForGroup(group: Group, callback: (() -> Unit)? = null) {
+        group.members = mutableListOf()
         for (i in 0 until group.memberIDs.count()) {
-            getUserRecord(group.memberIDs[i]) { user: User? ->
+            getUserRecord(group.memberIDs[i]) {
+                user: User? ->
                 if (user != null) {
                     group.members.add(user)
                 }
+                if (i == group.memberIDs.count() - 1) {
+                    if (callback != null) {
+                        callback()
+                    }
+                }
             }
         }
-        return group
     }
 
-    //Pass in a given User object and update the user's "groups" and  "friends" variable.
-    //Returns the passed in user with the updated groups and friends field
-    fun retrieveUserGroupAndFriendInfo(updateUser: User): User {
+    // Pass in a given User object and update the user's "groups" and "friends" variable.
+    fun getGroupAndFriendDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
+        updateUser.groups = mutableListOf()
         for (i in 0 until updateUser.groupIDs.count()){
-            getGroupRecord(updateUser.groupIDs[i]) { group: Group? ->
+            getGroupRecord(updateUser.groupIDs[i]) {
+                group: Group? ->
                 if (group != null){
                     updateUser.groups.add(group)
                 }
             }
         }
         Log.i("Backend", "Friend Count: " + updateUser.friendIDs.count())
+        updateUser.friends = mutableListOf()
         for (i in 0 until updateUser.friendIDs.count()){
             Log.i("Backend", "There was an attempt")
-            getUserRecord(updateUser.friendIDs[i]) { user: User? ->
+            getUserRecord(updateUser.friendIDs[i]) {
+                user: User? ->
                 Log.i("Backend", "Access Friend attempt")
                 if (user != null){
                     Log.i("Backend", "Adding friend: " + user.id)
                     updateUser.friends.add(user)
                 }
+                if (i == updateUser.friendIDs.count() - 1) {
+                    if (callback != null) {
+                        callback()
+                    }
+                }
             }
         }
-        return updateUser
     }
 
     // Retrieves the list of all user IDs for the app.
@@ -470,6 +482,30 @@ class BackendManager(context: Context?) {
                         }
             }
         }
+    }
+
+    fun addFriend(user1: User, user2: User) {
+        if (user1.friendIDs.contains(user2.id) || user2.friendIDs.contains(user1.id)) {
+            return
+        }
+        user1.friendIDs.add(user2.id)
+        user1.friends.add(user2)
+        user2.friendIDs.add(user1.id)
+        user2.friends.add(user1)
+        createUserRecord(user1)
+        createUserRecord(user2)
+    }
+
+    fun unfriend(user1: User, user2: User) {
+        if (!user1.friendIDs.contains(user2.id) && !user2.friendIDs.contains(user1.id)) {
+            return
+        }
+        user1.friendIDs.remove(user2.id)
+        user1.friends.remove(user2)
+        user2.friendIDs.remove(user1.id)
+        user2.friends.remove(user1)
+        createUserRecord(user1)
+        createUserRecord(user2)
     }
 
 }

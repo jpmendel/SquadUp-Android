@@ -28,13 +28,12 @@ import com.squadup.squadup.data.Group
  */
 class GroupsFragment : Fragment() {
 
-
     private lateinit var baseActivity: BaseActivity
     private lateinit var groupsList: ListView
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater!!.inflate(R.layout.groups_frag, container, false)
+        return inflater!!.inflate(R.layout.fragment_groups, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -70,10 +69,6 @@ class GroupsFragment : Fragment() {
         groupsList = baseActivity.findViewById(R.id.groupsListView)
     }
 
-
-
-
-
     companion object {
         // TODO: Rename parameter arguments, choose names that match
         // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -89,7 +84,17 @@ class GroupsFragment : Fragment() {
         // TODO: Rename and change types and number of parameters
         fun newInstance(): GroupsFragment {
             val fragment = GroupsFragment()
-            return fragment
+            return GroupsFragment()
         }
     }
+
+    fun onShowFragment() {
+        Log.i("GroupsFragment", "Fragment Selected")
+        refreshData()
+    }
+
+    fun refreshData() {
+
+    }
+
 }// Required empty public constructor
