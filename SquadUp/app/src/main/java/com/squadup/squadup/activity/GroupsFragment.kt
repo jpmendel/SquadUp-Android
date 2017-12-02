@@ -23,7 +23,7 @@ import com.squadup.squadup.R
  */
 class GroupsFragment : Fragment() {
 
-    
+
     private lateinit var baseActivity: BaseActivity
     private lateinit var groupsList: ListView
 
