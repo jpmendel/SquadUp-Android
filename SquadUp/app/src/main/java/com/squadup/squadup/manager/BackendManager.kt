@@ -203,17 +203,10 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a push notification to users subscribed to a certain topic.
-    fun sendNotification(recipients: MutableList<String>, title: String, body: String) {
-        if (recipients.isEmpty()) {
-            return
-        }
+    fun sendNotification(recipient: String, title: String, body: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        val registrationTokens = JSONArray()
-        for (recipient in recipients) {
-            registrationTokens.put(recipient)
-        }
-        json.put("to", registrationTokens)
+        json.put("to", recipient)
         val notification = JSONObject()
         notification.put("title", title)
         notification.put("body", body)

@@ -260,7 +260,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             sendLoginMessage()
             stopAnimatingLoadingImage()
             animateScreenIn()
-            statusText.text = "Waiting For Others..."
+            updateMembersRemainingText()
             testButton.visibility = View.VISIBLE
         }
     }
@@ -377,7 +377,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Updates the text at the top of the screen for how many members are left to join.
     private fun updateMembersRemainingText() {
         val membersRemaining = group.memberIDs.count() - locations.keys.count()
-        if (membersRemaining == 1) {
+        if (membersRemaining == group.memberIDs.count() - 1) {
+            statusText.text = "Waiting For Others..."
+        } else if (membersRemaining == 1) {
             for (member in group.members) {
                 if (!locations.containsKey(member.id)) {
                     statusText.text = "Waiting on ${member.name}..."
@@ -453,6 +455,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         statusText.text = "Calculating..."
         val centerPoint = calculateCenterPoint()
         meetingLocation = findClosestBuilding(centerPoint)
+        locations["meeting_location"] = meetingLocation!!.value
         var delay = 1000L
         for (location in locations.values) {
             Handler().postDelayed({
@@ -466,6 +469,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             statusText.text = "Squad Up!"
             map.uiSettings.isScrollGesturesEnabled = true
             map.uiSettings.isZoomGesturesEnabled = true
+            zoomToFit()
             animateSwitchButtons()
         }, 1000L + locations.values.count() * 500L)
     }
@@ -591,13 +595,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
         if (!findingMeetingLocation) {
-            val recipients = mutableListOf<String>()
             for (member in group.members) {
                 if (member.id != user.id && member.registrationToken != null) {
-                    recipients.add(member.registrationToken!!)
+                    app.backend.sendNotification(member.registrationToken!!, "${user.name} (SquadUp)", "Hey! Let's meet up!")
                 }
             }
-            app.backend.sendNotification(recipients, group.id, "${user.name} (SquadUp)")
         }
     }
 
