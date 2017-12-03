@@ -5,15 +5,12 @@ package com.squadup.squadup.activity
  */
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
@@ -54,21 +51,21 @@ class GroupsFragment : Fragment() {
         setupGroupList()
         groupsList.isClickable = true
 
-        refreshLayout.setOnRefreshListener {
-            Log.i("GroupsFragment", "Heard listener")
-            refreshData()
-        }
     }
 
     fun showGroupView(g : Group){
-        val intent = Intent(context, GroupViewActivity::class.java)
-        startActivity(intent)
+        baseActivity.app.backend.getMemberInfoForGroup(g){
+            group: Group? ->
+            baseActivity.app.group = group
+            Log.i("GROUPSFRAG: ShouldHave", baseActivity.app.group!!.members.toString())
+            val intent = Intent(context, GroupViewActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun initializeViews(){
         baseActivity = activity as BaseActivity
         groupsList = baseActivity.findViewById(R.id.groupsListView)
-        refreshLayout = baseActivity.findViewById(R.id.swiperefresh)
     }
 
     companion object {
@@ -97,7 +94,7 @@ class GroupsFragment : Fragment() {
 
 
     fun refreshData() {
-        groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups, refreshLayout)
+        groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups)
     }
 
 }// Required empty public constructor

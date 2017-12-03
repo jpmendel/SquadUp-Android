@@ -44,10 +44,9 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
     }
 
 
-    fun updateDataSet(groups: MutableList<Group>, refreshLayout: SwipeRefreshLayout) {
+    fun updateDataSet(groups: MutableList<Group>) {
         clear()
         addAll(groups)
         notifyDataSetChanged()
-        refreshLayout.setRefreshing(false)
     }
 }
