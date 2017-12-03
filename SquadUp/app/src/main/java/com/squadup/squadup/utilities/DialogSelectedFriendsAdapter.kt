@@ -30,7 +30,7 @@ class DialogSelectedFriendsAdapter(context : Context, friends: MutableList<User>
         val layoutInflater = LayoutInflater.from(adapterContext)
         val rows = layoutInflater.inflate(R.layout.row_group_member, viewGroup, false)
 
-        rows.findViewById<TextView>(R.id.friend_name).text = adapterFriends[position].name
+        rows.findViewById<TextView>(R.id.group_name).text = adapterFriends[position].name
         rows.findViewById<TextView>(R.id.friend_email).text = adapterFriends[position].id
 
         return rows

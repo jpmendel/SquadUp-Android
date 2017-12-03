@@ -32,7 +32,7 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
             fragment.showGroupView(group)
         }
 
-        val groupName = returnView.findViewById<TextView>(R.id.friend_name)
+        val groupName = returnView.findViewById<TextView>(R.id.group_name)
         groupName.text = group.name
 
         return returnView

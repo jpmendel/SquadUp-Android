@@ -525,10 +525,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
             AlertDialog.Builder(this)
                     .setTitle(senderName)
-                    .setMessage("Hey! Let's go!")
+                    .setMessage("Ready to meet now?")
                     .setPositiveButton("Yes") {
                         dialog, id ->
-                        Log.i("MeetUpActivity", "SENDER ID: " + senderID)
                         app.backend.sendReadyResponseMessage(group.id, user.id, user.name, senderID,true)
                     }
                     .setNegativeButton("No") {

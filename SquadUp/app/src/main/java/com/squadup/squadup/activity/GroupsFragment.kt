@@ -1,8 +1,5 @@
 package com.squadup.squadup.activity
 
-/**
- * Created by StephenHaberle on 11/27/17.
- */
 import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -16,15 +13,6 @@ import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.utilities.GroupListAdapter
 
-
-/**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [GroupsFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [GroupsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class GroupsFragment : Fragment() {
 
     companion object {
@@ -56,7 +44,6 @@ class GroupsFragment : Fragment() {
     }
 
     private fun setupGroupList() {
-        Log.i("FriendFragment", "User friends: " + baseActivity.app.user!!.groups)
         groupsListAdapter = GroupListAdapter(baseActivity, this, baseActivity.app.user!!.groups)
         groupsList.adapter = groupsListAdapter
     }
@@ -66,7 +53,6 @@ class GroupsFragment : Fragment() {
             group: Group? ->
             if (group != null) {
                 baseActivity.app.group = group
-                Log.i("GROUPSFRAG: ShouldHave", baseActivity.app.group!!.members.toString())
                 val intent = Intent(baseActivity, GroupViewActivity::class.java)
                 startActivity(intent)
             }
@@ -76,7 +62,6 @@ class GroupsFragment : Fragment() {
     fun onShowFragment() {
         refreshData()
     }
-
 
     fun refreshData() {
         groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups)

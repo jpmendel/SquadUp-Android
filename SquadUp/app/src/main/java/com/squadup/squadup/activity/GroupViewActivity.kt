@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
 import com.squadup.squadup.R
@@ -21,29 +22,26 @@ class GroupViewActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_group_view)
-
-        setSupportActionBar(findViewById(R.id.toolbar))
-
-        super.initializeViews()
+        initializeViews()
 
         //establish the name of the group
         val textView = findViewById<TextView>(R.id.textViewGroupName)
         textView.text = app.group?.name ?: "GroupName"
 
         //set up list view for members of group
-        var groupMemberListView = findViewById<ListView>(R.id.groupMemberListView)
-        Log.i("GROUPVIEW", app.group!!.members.toString())
+        val groupMemberListView = findViewById<ListView>(R.id.groupMemberListView)
         groupMemberListView.adapter = GroupMemberAdapter(this, app.group!!.members)
 
-
-        findViewById<FloatingActionButton>(R.id.fabSquadUp).setOnClickListener {
-            view : View ->
-            Handler().postDelayed({
-                showScreen(MeetUpActivity::class.java)
-            }, 0)
+        findViewById<Button>(R.id.meetUpButton).setOnClickListener {
+            showScreen(MeetUpActivity::class.java)
         }
+    }
+
+    override fun initializeViews() {
+        super.initializeViews()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
     }
 
 }

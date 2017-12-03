@@ -36,8 +36,6 @@ class MainActivity : BaseActivity() {
 
     private lateinit var broadcastManager: LocalBroadcastManager
 
-    private lateinit var currentFragment: String
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -71,7 +69,6 @@ class MainActivity : BaseActivity() {
                 .replace(R.id.friends_fragment_frame, friendsFragment)
                 .commit()
         friendsFragmentFrame.translationX = screenWidth
-        currentFragment = GROUPS_FRAGMENT
     }
 
     // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
@@ -125,11 +122,15 @@ class MainActivity : BaseActivity() {
         val senderID = intent.getStringExtra("senderID")
         val senderName = intent.getStringExtra("senderName")
         if (app.user != null) {
-            app.user!!.friendIDs.add(senderID)
+            if (!app.user!!.friendIDs.contains(senderID)) {
+                app.user!!.friendIDs.add(senderID)
+            }
             app.backend.getUserRecord(senderID) {
                 user: User? ->
                 if (user != null) {
-                    app.user!!.friends.add(user)
+                    if (!app.user!!.friends.contains(user)) {
+                        app.user!!.friends.add(user)
+                    }
                     friendsFragment.refreshData()
                 }
             }
@@ -152,11 +153,15 @@ class MainActivity : BaseActivity() {
         val groupID = intent.getStringExtra("groupID")
         val groupName = intent.getStringExtra("groupName")
         if (app.user != null) {
-            app.user!!.groupIDs.add(groupID)
+            if (!app.user!!.groupIDs.contains(groupID)) {
+                app.user!!.groupIDs.add(groupID)
+            }
             app.backend.getGroupRecord(groupID) {
                 group: Group? ->
                 if (group != null) {
-                    app.user!!.groups.add(group)
+                    if (!app.user!!.groups.contains(group)) {
+                        app.user!!.groups.add(group)
+                    }
                     groupsFragment.refreshData()
                 }
             }
@@ -170,7 +175,6 @@ class MainActivity : BaseActivity() {
             if (tab != null) {
                 hideKeyboard()
                 if (tab.text == GROUPS_FRAGMENT) {
-                    currentFragment = GROUPS_FRAGMENT
                     // Animate out the friends fragment.
                     friendsFragmentFrame.animate()
                             .setInterpolator(DecelerateInterpolator())
@@ -183,7 +187,6 @@ class MainActivity : BaseActivity() {
                             .duration = 300
                     groupsFragment.onShowFragment()
                 } else if (tab.text == FRIENDS_FRAGMENT) {
-                    currentFragment = FRIENDS_FRAGMENT
                     // Animate out the groups fragment.
                     groupsFragmentFrame.animate()
                             .setInterpolator(DecelerateInterpolator())

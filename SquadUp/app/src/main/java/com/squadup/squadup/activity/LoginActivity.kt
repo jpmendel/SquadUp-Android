@@ -94,9 +94,6 @@ class LoginActivity : BaseActivity() {
 
     private fun updateUI(account: GoogleSignInAccount?){
         if (account != null) {
-            Log.i("Login", "User Name " + account.displayName)
-            Log.i("Login", "Email " + account.email)
-            Log.i("Login", "Account ID " + account.id)
             signInButton.visibility = View.INVISIBLE
             loadingBar.visibility = View.VISIBLE
             setUserGlobal(account)
@@ -131,12 +128,9 @@ class LoginActivity : BaseActivity() {
 
     private fun setUserGlobal(account: GoogleSignInAccount?) {
         val userID = account!!.email
-        Log.i("Login", userID!!)
-        app.backend.getUserRecord(userID) {
+        app.backend.getUserRecord(userID!!) {
             user: User? ->
-            Log.i("LoginActivity", "Here now?")
             if (user == null) {
-                Log.i("LoginActivity", "New user!!!")
                 //create the user object, send it to the backend and application manager
                 val newUser = User(account.email!!, account.displayName!!)
                 app.backend.createUserRecord(newUser)
@@ -144,7 +138,6 @@ class LoginActivity : BaseActivity() {
                 app.user = newUser
             } else {
                 //send the user to the application manager
-                Log.i("LoginActivity", "Old user!!!")
                 app.user = user
             }
             app.backend.getFriendDataForUser(app.user!!) {

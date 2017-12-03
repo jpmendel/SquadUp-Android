@@ -28,7 +28,7 @@ class GroupMemberAdapter(activity: BaseActivity, groupMembers: MutableList<User>
             returnView = layoutInflater.inflate(R.layout.row_friend, viewGroup, false)
         }
 
-        val friendName = returnView!!.findViewById<TextView>(R.id.friend_name)
+        val friendName = returnView!!.findViewById<TextView>(R.id.group_name)
         friendName.text = groupMember.name
         val friendEmail = returnView.findViewById<TextView>(R.id.friend_email)
         friendEmail.text = groupMember.id

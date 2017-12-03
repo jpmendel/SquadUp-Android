@@ -1,38 +1,20 @@
 package com.squadup.squadup.activity
 
-/**
- * Created by StephenHaberle on 11/27/17.
- */
-
-import android.content.DialogInterface
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
 import android.support.v7.app.AlertDialog
-import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import android.widget.AdapterView.OnItemClickListener
 import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.utilities.DialogSelectedFriendsAdapter
 import com.squadup.squadup.utilities.FriendListAdapter
-import kotlinx.android.synthetic.main.fragment_friends.*
-import kotlinx.android.synthetic.main.row_friend.view.*
-import java.util.*
 
-/**
- * A simple [Fragment] subclass.
- * Activities that contain this fragment must implement the
- * [FriendsFragment.OnFragmentInteractionListener] interface
- * to handle interaction events.
- * Use the [FriendsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FriendsFragment : Fragment() {
 
     companion object {
@@ -51,7 +33,7 @@ class FriendsFragment : Fragment() {
 
     private lateinit var addFriendButton: Button
 
-    private lateinit var createGroupButton: FloatingActionButton
+    private lateinit var createGroupButton: Button
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.fragment_friends, container, false)
@@ -68,7 +50,7 @@ class FriendsFragment : Fragment() {
     private fun initializeViews() {
         baseActivity = activity as BaseActivity
         friendList = baseActivity.findViewById(R.id.friendListView)
-        createGroupButton = baseActivity.findViewById(R.id.fabCreateGroup)
+        createGroupButton = baseActivity.findViewById(R.id.createGroupButton)
         addFriendTextField = baseActivity.findViewById(R.id.autoCompleteTextView)
         addFriendButton = baseActivity.findViewById(R.id.addFriendBtn)
     }
@@ -78,7 +60,9 @@ class FriendsFragment : Fragment() {
             onAddFriendButtonClick()
         }
         createGroupButton.setOnClickListener {
-            onCreateGroupButtonClick()
+            if (isAnyFriendSelected()) {
+                onCreateGroupButtonClick()
+            }
         }
         addFriendTextField.setOnFocusChangeListener {
             view: View, focus: Boolean ->
@@ -115,7 +99,6 @@ class FriendsFragment : Fragment() {
 
     private fun onAddFriendButtonClick() {
         val friendEmail = addFriendTextField.text.toString()
-        Log.i("FriendFragment", friendEmail)
         //check if selected friend exists
         if (friendEmail.isNotEmpty()) {
             baseActivity.app.backend.getUserRecord(friendEmail) {
@@ -127,7 +110,6 @@ class FriendsFragment : Fragment() {
                     //clear the name from the autoCompleteTextView
                     addFriendTextField.text.clear()
 
-                    Log.i("FriendsFragment", "Jason: " + user.registrationToken)
                     // Send a message alerting the added person that you have added them.
                     if (user.registrationToken != null) {
                         baseActivity.app.backend.sendAddedAsFriendMessage(
@@ -136,11 +118,11 @@ class FriendsFragment : Fragment() {
                         )
                     }
                 } else {
-                    Toast.makeText(baseActivity, "User does not exist. Try again.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseActivity, "User does not exist", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
-            Toast.makeText(baseActivity, "User does not exist. Try again.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(baseActivity, "Enter a user email", Toast.LENGTH_SHORT).show()
         }
         baseActivity.hideKeyboard()
     }
@@ -170,8 +152,8 @@ class FriendsFragment : Fragment() {
                 .setMessage("Enter the name for the group:")
                 .setView(inputContainer)
                 .setPositiveButton("OK", {
-                    _: DialogInterface, _: Int ->
-                    Toast.makeText(baseActivity, "Created group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
+                    dialog, i ->
+                    Toast.makeText(baseActivity, "Created group: ${groupNameInput.text}", Toast.LENGTH_SHORT).show()
                     //create the new group, add the userIDs, and send it to the backend
                     val createdGroup = Group(groupNameInput.text.toString())
 
@@ -204,13 +186,11 @@ class FriendsFragment : Fragment() {
                         )
                     }
 
-                    for (friend in baseActivity.app.user!!.friends) {
-                        friend.selected = false
-                    }
+                    deselectAllFriends()
                     refreshData()
                 })
                 .setNegativeButton("Cancel", {
-                    _: DialogInterface, _: Int ->
+                    dialog, i ->
                 })
                 .show()
     }
@@ -221,6 +201,26 @@ class FriendsFragment : Fragment() {
 
     fun selectFriend(friend: User) {
         friend.selected = !friend.selected
+        updateCreateGroupButtonColor()
+    }
+
+    private fun deselectAllFriends() {
+        for (friend in baseActivity.app.user!!.friends) {
+            friend.selected = false
+        }
+        createGroupButton.setBackgroundResource(R.drawable.shape_round_button_gray)
+    }
+
+    private fun isAnyFriendSelected(): Boolean {
+        return baseActivity.app.user!!.friends.any { it.selected }
+    }
+
+    private fun updateCreateGroupButtonColor() {
+        if (isAnyFriendSelected()) {
+            createGroupButton.setBackgroundResource(R.drawable.shape_round_button_blue)
+        } else {
+            createGroupButton.setBackgroundResource(R.drawable.shape_round_button_gray)
+        }
     }
 
     fun removeFriend(friend: User) {
@@ -230,7 +230,7 @@ class FriendsFragment : Fragment() {
                     .setTitle("Squad Up")
                     .setMessage("Delete this friend?")
                     .setPositiveButton("Yes", {
-                        dialogInterface: DialogInterface?, i: Int ->
+                        dialog, i ->
                         baseActivity.app.backend.unfriend(user, friend)
                         refreshData()
                         if (friend.registrationToken != null) {
@@ -241,16 +241,14 @@ class FriendsFragment : Fragment() {
                         }
                     })
                     .setNegativeButton("No", {
-                        dialogInterface: DialogInterface?, i: Int ->
+                        dialog, i ->
                     })
                     .show()
         }
     }
 
     fun onShowFragment() {
-        for (friend in baseActivity.app.user!!.friends) {
-            friend.selected = false
-        }
+        deselectAllFriends()
         refreshData()
     }
 

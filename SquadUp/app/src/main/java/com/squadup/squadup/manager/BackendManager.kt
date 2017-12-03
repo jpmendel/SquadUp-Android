@@ -522,27 +522,29 @@ class BackendManager(context: Context?) {
     }
 
     fun addFriend(user1: User, user2: User) {
-        if (user1.friendIDs.contains(user2.id) || user2.friendIDs.contains(user1.id)) {
-            return
+        if (!user1.friendIDs.contains(user2.id)) {
+            user1.friendIDs.add(user2.id)
+            user1.friends.add(user2)
+            createUserRecord(user1)
         }
-        user1.friendIDs.add(user2.id)
-        user1.friends.add(user2)
-        user2.friendIDs.add(user1.id)
-        user2.friends.add(user1)
-        createUserRecord(user1)
-        createUserRecord(user2)
+        if (!user2.friendIDs.contains(user1.id)) {
+            user2.friendIDs.add(user1.id)
+            user2.friends.add(user1)
+            createUserRecord(user2)
+        }
     }
 
     fun unfriend(user1: User, user2: User) {
-        if (!user1.friendIDs.contains(user2.id) && !user2.friendIDs.contains(user1.id)) {
-            return
+        if (user1.friendIDs.contains(user2.id)) {
+            user1.friendIDs.remove(user2.id)
+            user1.friends.remove(user2)
+            createUserRecord(user1)
         }
-        user1.friendIDs.remove(user2.id)
-        user1.friends.remove(user2)
-        user2.friendIDs.remove(user1.id)
-        user2.friends.remove(user1)
-        createUserRecord(user1)
-        createUserRecord(user2)
+        if (user2.friendIDs.contains(user1.id)) {
+            user2.friendIDs.remove(user1.id)
+            user2.friends.remove(user1)
+            createUserRecord(user2)
+        }
     }
 
 }
