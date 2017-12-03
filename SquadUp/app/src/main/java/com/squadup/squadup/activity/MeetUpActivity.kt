@@ -582,7 +582,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private fun onNotifyGroupButtonClick() {
         if (!findingMeetingLocation) {
             for (member in group.members) {
-                if (member.id != user.id && member.registrationToken != null) {
+                if (member != user && member.registrationToken != null) {
                     app.backend.sendNotification(member.registrationToken!!, group.name, "Hey! Let's meet up!")
                 }
             }

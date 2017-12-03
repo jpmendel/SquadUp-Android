@@ -1,11 +1,15 @@
 package com.squadup.squadup.service
 
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
+import android.support.v4.app.NotificationCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.squadup.squadup.activity.BaseActivity
+import java.util.*
 
 /**
  * The messaging service for Firebase, responsible for handling messages sent by other
@@ -69,8 +73,22 @@ class FirebaseMessageService : FirebaseMessagingService() {
                     )
                 }
             }
+
             if (message.notification != null) {
                 Log.i("FirebaseMessageService", "Notification: " + message.notification.toString())
+
+                val notificationID = Random().nextInt(100000)
+                val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val notification = NotificationCompat.Builder(this)
+                        .setContentTitle(message.notification!!.title)
+                        .setContentInfo(message.notification!!.body)
+                        .setSmallIcon(android.R.drawable.ic_menu_myplaces)
+                        .setSound(sound)
+                        .setAutoCancel(true)
+                        .build()
+
+                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.notify(notificationID, notification)
             }
         }
     }
