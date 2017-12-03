@@ -123,7 +123,6 @@ class FriendsFragment : Fragment() {
                     Log.i("FriendsFragment", "Jason: " + user.registrationToken)
                     // Send a message alerting the added person that you have added them.
                     if (user.registrationToken != null) {
-                        Log.i("FriendsFragment", "SENT MESSAGE")
                         baseActivity.app.backend.sendAddedAsFriendMessage(
                                 user.registrationToken!!,
                                 baseActivity.app.user!!.id, baseActivity.app.user!!.name
@@ -166,7 +165,6 @@ class FriendsFragment : Fragment() {
                 .setPositiveButton("OK", {
                     _: DialogInterface, _: Int ->
                     Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
-                    //TODO Handle adding groups functionality here!
                     //create the new group, add the userIDs, and send it to the backend
                     val groupID = groupNameInput.toString() + "-" + UUID.randomUUID().toString()
                     val createdGroup = Group(groupID, groupNameInput.text.toString())
@@ -192,8 +190,10 @@ class FriendsFragment : Fragment() {
                     val recipients = mutableListOf<String>()
                     for (friend in selectedFriends){
                         baseActivity.app.backend.createUserRecord(friend)
-                        if (friend.registrationToken != null) {
-                            recipients.add(friend.registrationToken!!)
+                        if (friend != baseActivity.app.user) {
+                            if (friend.registrationToken != null) {
+                                recipients.add(friend.registrationToken!!)
+                            }
                         }
                     }
 

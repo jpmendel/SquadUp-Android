@@ -199,8 +199,8 @@ class BackendManager(context: Context?) {
         data.put("type", FirebaseMessageService.ADDED_TO_GROUP)
         data.put("senderID", senderID)
         data.put("senderName", senderName)
-        data.put("groupID", senderID)
-        data.put("groupName", senderName)
+        data.put("groupID", groupID)
+        data.put("groupName", groupName)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
