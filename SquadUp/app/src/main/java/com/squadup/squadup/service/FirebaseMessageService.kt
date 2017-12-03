@@ -49,10 +49,12 @@ class FirebaseMessageService : FirebaseMessagingService() {
                             message.data["senderID"]!!, message.data["senderName"]!!
                     )
                 } else if (message.data["type"] == READY_RESPONSE) {
-                    broadcastReadyResponseMessage(
-                            message.data["senderID"]!!, message.data["senderName"]!!,
-                            message.data["receiverID"]!!, message.data["response"]!!.toBoolean()
-                    )
+                    if (message.data["receiverID"] != null) {
+                        broadcastReadyResponseMessage(
+                                message.data["senderID"]!!, message.data["senderName"]!!,
+                                message.data["receiverID"]!!, message.data["response"]!!.toBoolean()
+                        )
+                    }
                 } else if (message.data["type"] == READY_DECISION) {
                     broadcastReadyDecisionMessage(
                             message.data["senderID"]!!, message.data["senderName"]!!,
