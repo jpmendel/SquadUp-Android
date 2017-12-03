@@ -22,4 +22,5 @@
         android:textAllCaps="false"
         android:textStyle="italic" />
 
+
 </android.support.v7.widget.Toolbar>

@@ -4,4 +4,6 @@
     <string name="tab_text_2">Friends</string>
     <string name="title_activity_meet_up">Map</string>
     <string name="addFriendTxt">Add Friend</string>
+    <string name="menu_refresh"></string>
+
 </resources>

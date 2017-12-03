@@ -5,17 +5,16 @@ package com.squadup.squadup.activity
  */
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
+import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
+import com.squadup.squadup.utilities.GroupListAdapter
 
 
 /**
@@ -30,38 +29,38 @@ class GroupsFragment : Fragment() {
 
     private lateinit var baseActivity: BaseActivity
     private lateinit var groupsList: ListView
+    private lateinit var refreshLayout: SwipeRefreshLayout
+    private lateinit var groupsListAdapter: GroupListAdapter
+
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater!!.inflate(R.layout.fragment_groups, container, false)
     }
 
+    private fun setupGroupList() {
+        Log.i("FriendFragment", "User friends: " + baseActivity.app.user!!.groups)
+        groupsListAdapter = GroupListAdapter(baseActivity, this, baseActivity.app.user!!.groups)
+        groupsList.adapter = groupsListAdapter
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         initializeViews()
-
-        //fill groups list adapter
-        val groupsListAdapter = ArrayAdapter<String>(baseActivity,
-                android.R.layout.simple_dropdown_item_1line, baseActivity.app.user!!.groups.map { group -> group.name })
-
-        val onClick = AdapterView.OnItemClickListener { parent, view, position, id ->
-            Log.i("GroupsFragment", "Selected: " + groupsListAdapter.getItem(position).toString())
-
-            val groupNameTxt = groupsListAdapter.getItem(position).toString()
-            for (g in baseActivity.app.user!!.groups) {
-                if (g.name == (groupNameTxt)) {
-                    baseActivity.app.group = g
-
-                    val intent = Intent(context, GroupViewActivity::class.java)
-                    startActivity(intent)
-                }
-            }
-        }
-        groupsList.adapter = groupsListAdapter
+        setupGroupList()
         groupsList.isClickable = true
-        groupsList.setOnItemClickListener(onClick)
 
+    }
 
+    fun showGroupView(g : Group){
+        baseActivity.app.backend.getMemberInfoForGroup(g){
+            group: Group? ->
+            baseActivity.app.group = group
+            Log.i("GROUPSFRAG: ShouldHave", baseActivity.app.group!!.members.toString())
+            val intent = Intent(context, GroupViewActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun initializeViews(){
@@ -93,8 +92,9 @@ class GroupsFragment : Fragment() {
         refreshData()
     }
 
-    fun refreshData() {
 
+    fun refreshData() {
+        groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups)
     }
 
 }// Required empty public constructor
