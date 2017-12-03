@@ -1,7 +1,5 @@
 package com.squadup.squadup.utilities
 
-import android.content.Intent
-import android.support.v4.widget.SwipeRefreshLayout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +7,6 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.squadup.squadup.R
 import com.squadup.squadup.activity.BaseActivity
-import com.squadup.squadup.activity.GroupViewActivity
 import com.squadup.squadup.activity.GroupsFragment
 import com.squadup.squadup.data.Group
 
@@ -37,7 +34,7 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
             fragment.showGroupView(group)
             }
 
-        val groupName = returnView.findViewById<TextView>(R.id.group_name)
+        val groupName = returnView.findViewById<TextView>(R.id.friend_name)
         groupName.text = group.name
 
         return returnView
