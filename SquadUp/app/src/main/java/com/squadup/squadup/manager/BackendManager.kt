@@ -403,7 +403,7 @@ class BackendManager(context: Context?) {
     }
 
     // Pass in a given Group with only the list of the member IDs and get data for each member.
-    fun getMemberInfoForGroup(group: Group, callback: (() -> Unit)? = null) {
+    fun getMemberInfoForGroup(group: Group, callback: ((group: Group?) -> Unit)? = null) {
         group.members = mutableListOf()
         for (i in 0 until group.memberIDs.count()) {
             getUserRecord(group.memberIDs[i]) {
@@ -413,7 +413,7 @@ class BackendManager(context: Context?) {
                 }
                 if (i == group.memberIDs.count() - 1) {
                     if (callback != null) {
-                        callback()
+                        callback(group)
                     }
                 }
             }
