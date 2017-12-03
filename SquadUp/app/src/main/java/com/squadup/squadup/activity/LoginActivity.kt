@@ -148,8 +148,11 @@ class LoginActivity : BaseActivity() {
                 app.user = user
             }
             app.backend.getFriendDataForUser(app.user!!) {
+                userWithFriends: User ->
+                app.user = userWithFriends
                 app.backend.getGroupDataForUser(app.user!!) {
-                    Log.i("LoginActivity", "GROUPS: " + app.user!!.groups.toString())
+                    userWithGroups: User ->
+                    app.user = userWithGroups
                     app.updateCurrentUserRegistration {
                         showScreen(MainActivity::class.java) {
                             intent: Intent ->

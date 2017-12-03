@@ -402,7 +402,7 @@ class BackendManager(context: Context?) {
     }
 
     // Pass in a given Group with only the list of the member IDs and get data for each member.
-    fun getMemberInfoForGroup(group: Group, callback: ((group: Group?) -> Unit)? = null) {
+    fun getMemberInfoForGroup(group: Group, callback: ((group: Group) -> Unit)? = null) {
         group.members = mutableListOf()
         for (i in 0 until group.memberIDs.count()) {
             getUserRecord(group.memberIDs[i]) {
@@ -420,50 +420,52 @@ class BackendManager(context: Context?) {
     }
 
     // Pass in a given User object and update the user's "groups" and "friends" variable.
-    fun getFriendDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
+    fun getFriendDataForUser(updateUser: User, callback: ((user: User) -> Unit)? = null) {
         Log.i("BackendManager", "Friend Count: " + updateUser.friendIDs.count())
-        updateUser.friends = mutableListOf()
         for (i in 0 until updateUser.friendIDs.count()) {
             getUserRecord(updateUser.friendIDs[i]) {
                 user: User? ->
                 if (user != null){
                     Log.i("BackendManager", "Adding Friend: " + user.id)
-                    updateUser.friends.add(user)
+                    if (!updateUser.friends.contains(user)) {
+                        updateUser.friends.add(user)
+                    }
                 }
                 if (i == updateUser.friendIDs.count() - 1) {
                     if (callback != null) {
-                        callback()
+                        callback(updateUser)
                     }
                 }
             }
         }
         if (updateUser.friendIDs.count() == 0) {
             if (callback != null) {
-                callback()
+                callback(updateUser)
             }
         }
     }
 
-    fun getGroupDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
+    fun getGroupDataForUser(updateUser: User, callback: ((user: User) -> Unit)? = null) {
         Log.i("BackendManager", "Group Count: " + updateUser.groupIDs.count())
-        updateUser.groups = mutableListOf()
         for (i in 0 until updateUser.groupIDs.count()) {
             getGroupRecord(updateUser.groupIDs[i]) {
                 group: Group? ->
                 if (group != null) {
                     Log.i("BackendManager", "Adding Group: " + group.id)
-                    updateUser.groups.add(group)
+                    if (!updateUser.groups.contains(group)) {
+                        updateUser.groups.add(group)
+                    }
                 }
                 if (i == updateUser.groupIDs.count() - 1) {
                     if (callback != null) {
-                        callback()
+                        callback(updateUser)
                     }
                 }
             }
         }
         if (updateUser.groupIDs.count() == 0) {
             if (callback != null) {
-                callback()
+                callback(updateUser)
             }
         }
     }

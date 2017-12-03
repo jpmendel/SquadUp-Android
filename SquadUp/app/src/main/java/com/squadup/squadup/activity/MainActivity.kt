@@ -42,13 +42,12 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
-        refreshUserData()
         broadcastManager = LocalBroadcastManager.getInstance(this)
     }
 
     override fun onStart() {
         super.onStart()
-        Log.i("MainActivity", "GROUPS: " + app.user!!.groups.toString())
+        refreshUserData()
         initializeBroadcastReceiver()
     }
 
@@ -91,7 +90,11 @@ class MainActivity : BaseActivity() {
                 if (user != null) {
                     app.user = user
                     app.backend.getFriendDataForUser(app.user!!) {
+                        userWithFriends: User ->
+                        app.user = userWithFriends
                         app.backend.getGroupDataForUser(app.user!!) {
+                            userWithGroups: User ->
+                            app.user = userWithGroups
                             friendsFragment.refreshData()
                             groupsFragment.refreshData()
                         }
