@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.LinearLayout
 import android.widget.TextView
 import com.squadup.squadup.R
 import com.squadup.squadup.activity.BaseActivity
@@ -31,7 +30,7 @@ class FriendListAdapter(activity: BaseActivity, fragment: FriendsFragment, frien
             returnView = layoutInflater.inflate(R.layout.row_friend, viewGroup, false)
         }
 
-        val friendName = returnView!!.findViewById<TextView>(R.id.friend_name)
+        val friendName = returnView!!.findViewById<TextView>(R.id.group_name)
         friendName.text = friend.name
         val friendEmail = returnView.findViewById<TextView>(R.id.friend_email)
         friendEmail.text = friend.id

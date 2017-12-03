@@ -8,7 +8,7 @@
     android:weightSum="1">
 
     <View
-        android:id="@+id/friend_background"
+        android:id="@+id/group_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0"
@@ -31,24 +31,12 @@
             android:layout_marginTop="5dp"
             android:layout_weight="0.5"
             android:gravity="bottom"
-            android:text="Friend Name"
+            android:text="Group Name"
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/friend_email"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="3dp"
-            android:layout_weight="0.5"
-            android:gravity="top"
-            android:text="friend@email.com"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/group_name" />
 
     </LinearLayout>
 
