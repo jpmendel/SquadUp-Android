@@ -184,23 +184,16 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a message letting the members of a group know you created the group.
-    fun sendAddedToGroupMessage(recipients: MutableList<String>, senderID: String, senderName: String, groupID: String, groupName: String) {
-        if (recipients.isEmpty()) {
-            return
-        }
+    fun sendAddedToGroupMessage(recipient: String, senderID: String, senderName: String, groupID: String, groupName: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        val registrationTokens = JSONArray()
-        for (recipient in recipients) {
-            registrationTokens.put(recipient)
-        }
-        json.put("to", registrationTokens)
+        json.put("to", recipient)
         val data = JSONObject()
         data.put("type", FirebaseMessageService.ADDED_TO_GROUP)
         data.put("senderID", senderID)
         data.put("senderName", senderName)
-        data.put("groupID", senderID)
-        data.put("groupName", senderName)
+        data.put("groupID", groupID)
+        data.put("groupName", groupName)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
@@ -260,11 +253,12 @@ class BackendManager(context: Context?) {
                 user.groupIDs.add(groups[i])
             }
         }
+        user.registrationToken = document["registrationToken"] as String?
         return user
     }
 
     // Creates or updates a user record in the Firestore database backend.
-    fun createUserRecord(user: User) {
+    fun createUserRecord(user: User, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(USER_COLLECTION)
                 .document(user.id)
@@ -275,11 +269,14 @@ class BackendManager(context: Context?) {
                     } else {
                         Log.e("BackendManager", "Failed to Create User: " + task.exception)
                     }
+                    if (callback != null) {
+                        callback()
+                    }
                 }
     }
 
     // Deletes a user record in the Firestore database backend.
-    fun deleteUserRecord(userID: String) {
+    fun deleteUserRecord(userID: String, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(USER_COLLECTION)
                 .document(userID)
@@ -289,6 +286,9 @@ class BackendManager(context: Context?) {
                         Log.i("BackendManager", "Successfully Deleted User: " + userID)
                     } else {
                         Log.e("BackendManager", "Failed to Delete User: " + task.exception)
+                    }
+                    if (callback != null) {
+                        callback()
                     }
                 }
     }
@@ -337,7 +337,7 @@ class BackendManager(context: Context?) {
     }
 
     // Creates or updates a user record in the Firestore database backend.
-    fun createGroupRecord(group: Group) {
+    fun createGroupRecord(group: Group, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(GROUP_COLLECTION)
                 .document(group.id)
@@ -348,11 +348,14 @@ class BackendManager(context: Context?) {
                     } else {
                         Log.e("BackendManager", "Failed to Create Group: " + task.exception)
                     }
+                    if (callback != null) {
+                        callback()
+                    }
                 }
     }
 
     // Deletes a user record in the Firestore database backend.
-    fun deleteGroupRecord(groupID: String) {
+    fun deleteGroupRecord(groupID: String, callback: (() -> Unit)? = null) {
         firestoreDatabase
                 .collection(GROUP_COLLECTION)
                 .document(groupID)
@@ -362,6 +365,9 @@ class BackendManager(context: Context?) {
                         Log.i("BackendManager", "Successfully Deleted Group: " + groupID)
                     } else {
                         Log.e("BackendManager", "Failed to Delete Group: " + task.exception)
+                    }
+                    if (callback != null) {
+                        callback()
                     }
                 }
     }

@@ -15,7 +15,7 @@ class ApplicationManager : Application() {
 
     var user: User? = null
 
-    var group: Group = Group("GROUP01", "Dream Team")
+    var group: Group? = null
 
     //list of user Emails
     var userList: MutableList<String> = mutableListOf()
@@ -23,15 +23,18 @@ class ApplicationManager : Application() {
     // Sets up all the initial data for the application.
     fun setup() {
         backend = BackendManager(applicationContext)
-        group.memberIDs = mutableListOf("Jason", "John", "Jackson")
     }
 
     // Updates the registration token for the current user.
-    fun updateCurrentUserRegistration() {
+    fun updateCurrentUserRegistration(callback: (() -> Unit)? = null) {
         if (user != null) {
             if (user!!.registrationToken != FirebaseIDService.getToken()) {
                 user!!.registrationToken = FirebaseIDService.getToken()
-                backend.createUserRecord(user!!)
+                backend.createUserRecord(user!!, callback)
+            } else {
+                if (callback != null) {
+                    callback()
+                }
             }
         }
     }

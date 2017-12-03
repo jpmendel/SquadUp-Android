@@ -132,7 +132,7 @@ class LoginActivity : BaseActivity() {
     private fun setUserGlobal(account: GoogleSignInAccount?) {
         val userID = account!!.email
         Log.i("Login", userID!!)
-        app.backend.getUserRecord(userID!!) {
+        app.backend.getUserRecord(userID) {
             user: User? ->
             Log.i("LoginActivity", "Here now?")
                 if (user == null) {
@@ -148,8 +148,9 @@ class LoginActivity : BaseActivity() {
                     app.user = user
                 }
             app.backend.getGroupAndFriendDataForUser(app.user!!) {
-                app.updateCurrentUserRegistration()
-                showScreen(MainActivity::class.java)
+                app.updateCurrentUserRegistration {
+                    showScreen(MainActivity::class.java)
+                }
             }
         }
     }

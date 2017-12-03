@@ -120,6 +120,7 @@ class FriendsFragment : Fragment() {
                             android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
                     addFriendTextField.setAdapter(adapterUserEmailsUpdate)
 
+                    Log.i("FriendsFragment", "Jason: " + user.registrationToken)
                     // Send a message alerting the added person that you have added them.
                     if (user.registrationToken != null) {
                         baseActivity.app.backend.sendAddedAsFriendMessage(
@@ -164,20 +165,11 @@ class FriendsFragment : Fragment() {
                 .setPositiveButton("OK", {
                     _: DialogInterface, _: Int ->
                     Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
-                    //TODO Handle adding groups functionality here!
                     //create the new group, add the userIDs, and send it to the backend
-                    val groupID = groupNameInput.toString() + "-" + UUID.randomUUID().toString()
-                    val createdGroup = Group(groupID, groupNameInput.text.toString())
-                    //add members to group
-                    createdGroup.memberIDs.add(baseActivity.app.user!!.id)
-                    createdGroup.members.add(baseActivity.app.user!!)
-
-                    //add group to user
-                    baseActivity.app.user!!.groupIDs.add(createdGroup.id)
-                    baseActivity.app.user!!.groups.add(createdGroup)
+                    val createdGroup = Group(groupNameInput.text.toString())
 
                     //add group to selected users
-                    for (friend in selectedFriends){
+                    for (friend in selectedFriends) {
                         createdGroup.memberIDs.add(friend.id)
                         createdGroup.members.add(friend)
                         friend.groupIDs.add(createdGroup.id)
@@ -186,9 +178,23 @@ class FriendsFragment : Fragment() {
 
                     //update the backend for all users and the group involved
                     baseActivity.app.backend.createGroupRecord(createdGroup)
-                    baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
-                    for (friend in selectedFriends){
+
+                    val recipients = mutableListOf<String>()
+                    for (friend in selectedFriends) {
                         baseActivity.app.backend.createUserRecord(friend)
+                        if (friend != baseActivity.app.user) {
+                            if (friend.registrationToken != null) {
+                                recipients.add(friend.registrationToken!!)
+                            }
+                        }
+                    }
+
+                    for (recipient in recipients) {
+                        baseActivity.app.backend.sendAddedToGroupMessage(
+                                recipient,
+                                baseActivity.app.user!!.id, baseActivity.app.user!!.name,
+                                createdGroup.id, createdGroup.name
+                        )
                     }
                     //that's it for now, then work on transition to GroupFragment?
                 })

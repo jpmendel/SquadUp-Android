@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.support.design.widget.TabLayout
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -16,8 +17,6 @@ import com.squadup.squadup.data.User
 import com.squadup.squadup.service.FirebaseMessageService
 import android.widget.EditText
 import android.view.MotionEvent
-
-
 
 class MainActivity : BaseActivity() {
 
@@ -106,9 +105,9 @@ class MainActivity : BaseActivity() {
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
+                Log.i("MainActivity", "RECEIVED")
                 onAddedAsFriendMessageReceived(intent)
-            }
-            if (intent.action == FirebaseMessageService.ADDED_TO_GROUP) {
+            } else if (intent.action == FirebaseMessageService.ADDED_TO_GROUP) {
                 onAddedToGroupMessageReceived(intent)
             }
         }
