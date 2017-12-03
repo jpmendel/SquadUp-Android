@@ -38,6 +38,8 @@ class MainActivity : BaseActivity() {
 
     private lateinit var currentFragment: String
 
+    private var testBool : Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -46,9 +48,12 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onStart() {
-        super.onStart()
         refreshUserData()
         initializeBroadcastReceiver()
+        while(!testBool){
+            Thread.sleep(10)
+        }
+        super.onStart()
     }
 
     override fun onStop() {
@@ -84,6 +89,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun refreshUserData() {
+        testBool = false
         if (app.user != null) {
             app.backend.getUserRecord(app.user!!.id) {
                 user: User? ->
@@ -98,6 +104,7 @@ class MainActivity : BaseActivity() {
                 }
             }
         }
+        testBool = true
     }
 
     override fun onBackPressed() {
