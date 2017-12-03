@@ -50,7 +50,7 @@ class MainActivity : BaseActivity() {
     override fun onStart() {
         refreshUserData()
         initializeBroadcastReceiver()
-        while(!testBool){
+        while (!testBool) {
             Thread.sleep(10)
         }
         super.onStart()
@@ -99,12 +99,12 @@ class MainActivity : BaseActivity() {
                         app.backend.getGroupDataForUser(app.user!!) {
                             friendsFragment.refreshData()
                             groupsFragment.refreshData()
+                            testBool = true
                         }
                     }
                 }
             }
         }
-        testBool = true
     }
 
     override fun onBackPressed() {
