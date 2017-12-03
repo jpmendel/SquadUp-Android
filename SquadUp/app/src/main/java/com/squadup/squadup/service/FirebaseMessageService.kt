@@ -49,7 +49,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
                             message.data["senderID"]!!, message.data["senderName"]!!
                     )
                 } else if (message.data["type"] == READY_RESPONSE) {
-                    if (message.data["receiverID"] != null) {
+                    if (message.data["senderID"] != null && message.data["senderName"] != null && message.data["receiverID"] != null) {
                         broadcastReadyResponseMessage(
                                 message.data["senderID"]!!, message.data["senderName"]!!,
                                 message.data["receiverID"]!!, message.data["response"]!!.toBoolean()
