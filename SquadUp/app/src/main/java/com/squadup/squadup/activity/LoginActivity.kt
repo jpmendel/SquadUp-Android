@@ -147,9 +147,11 @@ class LoginActivity : BaseActivity() {
                     Log.i("LoginActivity", "Old user!!!")
                     app.user = user
                 }
-            app.backend.getGroupAndFriendDataForUser(app.user!!) {
-                app.updateCurrentUserRegistration {
-                    showScreen(MainActivity::class.java)
+            app.backend.getFriendDataForUser(app.user!!) {
+                app.backend.getGroupDataForUser(app.user!!) {
+                    app.updateCurrentUserRegistration {
+                        showScreen(MainActivity::class.java)
+                    }
                 }
             }
         }

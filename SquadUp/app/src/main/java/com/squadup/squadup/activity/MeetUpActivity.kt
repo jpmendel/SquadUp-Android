@@ -45,9 +45,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The image displayed while the GPS is acquiring the user's location.
     private lateinit var loadingImage: ImageView
 
-    // FOR TESTING PURPOSES ONLY.
-    private lateinit var testButton: Button
-
     // The layout at the bottom of the screen containing two buttons.
     private lateinit var lowerButtonLayout: LinearLayout
 
@@ -132,7 +129,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         mapFrame = findViewById(R.id.map_frame)
         statusText = findViewById(R.id.status_text)
         loadingImage = findViewById(R.id.loading_image)
-        testButton = findViewById(R.id.test_button)
         lowerButtonLayout = findViewById(R.id.lower_button_layout)
         meetNowButton = findViewById(R.id.meet_now_button)
         meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
@@ -165,15 +161,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Sets up any buttons on the screen.
     private fun setupButtons() {
-        testButton.setOnClickListener {
-            if (!locations.containsKey("jason")) {
-                app.backend.sendLoginMessage(group.id, "jason", "Jason Corriveau", 40.95231, -76.880407)
-            } else if (!locations.containsKey("stephen")) {
-                app.backend.sendLoginMessage(group.id, "stephen", "Stephen Haberle", 40.957906, -76.884733)
-            } else if (!locations.containsKey("eric")) {
-                app.backend.sendLoginMessage(group.id, "eric", "Eric Marshall", 40.956436, -76.884541)
-            }
-        }
         meetNowButton.setOnClickListener {
             onMeetNowButtonClick()
         }
@@ -260,8 +247,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             sendLoginMessage()
             stopAnimatingLoadingImage()
             animateScreenIn()
-            statusText.text = "Waiting For Others..."
-            testButton.visibility = View.VISIBLE
+            updateMembersRemainingText()
         }
     }
 
@@ -377,7 +363,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Updates the text at the top of the screen for how many members are left to join.
     private fun updateMembersRemainingText() {
         val membersRemaining = group.memberIDs.count() - locations.keys.count()
-        if (membersRemaining == 1) {
+        if (membersRemaining == group.memberIDs.count() - 1) {
+            statusText.text = "Waiting For Others..."
+        } else if (membersRemaining == 1) {
             for (member in group.members) {
                 if (!locations.containsKey(member.id)) {
                     statusText.text = "Waiting on ${member.name}..."
@@ -453,6 +441,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         statusText.text = "Calculating..."
         val centerPoint = calculateCenterPoint()
         meetingLocation = findClosestBuilding(centerPoint)
+        locations["meeting_location"] = meetingLocation!!.value
         var delay = 1000L
         for (location in locations.values) {
             Handler().postDelayed({
@@ -466,6 +455,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             statusText.text = "Squad Up!"
             map.uiSettings.isScrollGesturesEnabled = true
             map.uiSettings.isZoomGesturesEnabled = true
+            zoomToFit()
             animateSwitchButtons()
         }, 1000L + locations.values.count() * 500L)
     }
@@ -591,13 +581,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
         if (!findingMeetingLocation) {
-            val recipients = mutableListOf<String>()
             for (member in group.members) {
                 if (member.id != user.id && member.registrationToken != null) {
-                    recipients.add(member.registrationToken!!)
+                    app.backend.sendNotification(member.registrationToken!!, group.name, "Hey! Let's meet up!")
                 }
             }
-            app.backend.sendNotification(recipients, group.id, "${user.name} (SquadUp)")
         }
     }
 

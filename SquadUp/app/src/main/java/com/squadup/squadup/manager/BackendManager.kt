@@ -183,6 +183,23 @@ class BackendManager(context: Context?) {
         })
     }
 
+    // Sends a message letting a user know you have added them as a friend.
+    fun sendRemovedAsFriendMessage(recipient: String, senderID: String, senderName: String) {
+        val json = JSONObject()
+        json.put("token", FirebaseIDService.getToken())
+        json.put("to", recipient)
+        val data = JSONObject()
+        data.put("type", FirebaseMessageService.REMOVED_AS_FRIEND)
+        data.put("senderID", senderID)
+        data.put("senderName", senderName)
+        json.put("data", data)
+        sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
+            Log.i("BackendManager", "Response: " + response)
+        }, { error: VolleyError? ->
+            Log.e("BackendManager", "Error: " + error)
+        })
+    }
+
     // Sends a message letting the members of a group know you created the group.
     fun sendAddedToGroupMessage(recipient: String, senderID: String, senderName: String, groupID: String, groupName: String) {
         val json = JSONObject()
@@ -203,17 +220,10 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a push notification to users subscribed to a certain topic.
-    fun sendNotification(recipients: MutableList<String>, title: String, body: String) {
-        if (recipients.isEmpty()) {
-            return
-        }
+    fun sendNotification(recipient: String, title: String, body: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        val registrationTokens = JSONArray()
-        for (recipient in recipients) {
-            registrationTokens.put(recipient)
-        }
-        json.put("to", registrationTokens)
+        json.put("to", recipient)
         val notification = JSONObject()
         notification.put("title", title)
         notification.put("body", body)
@@ -411,25 +421,14 @@ class BackendManager(context: Context?) {
     }
 
     // Pass in a given User object and update the user's "groups" and "friends" variable.
-    fun getGroupAndFriendDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
-        updateUser.groups = mutableListOf()
-        for (i in 0 until updateUser.groupIDs.count()){
-            getGroupRecord(updateUser.groupIDs[i]) {
-                group: Group? ->
-                if (group != null){
-                    updateUser.groups.add(group)
-                }
-            }
-        }
-        Log.i("Backend", "Friend Count: " + updateUser.friendIDs.count())
+    fun getFriendDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
+        Log.i("BackendManager", "Friend Count: " + updateUser.friendIDs.count())
         updateUser.friends = mutableListOf()
-        for (i in 0 until updateUser.friendIDs.count()){
-            Log.i("Backend", "There was an attempt")
+        for (i in 0 until updateUser.friendIDs.count()) {
             getUserRecord(updateUser.friendIDs[i]) {
                 user: User? ->
-                Log.i("Backend", "Access Friend attempt")
                 if (user != null){
-                    Log.i("Backend", "Adding friend: " + user.id)
+                    Log.i("BackendManager", "Adding Friend: " + user.id)
                     updateUser.friends.add(user)
                 }
                 if (i == updateUser.friendIDs.count() - 1) {
@@ -437,6 +436,35 @@ class BackendManager(context: Context?) {
                         callback()
                     }
                 }
+            }
+        }
+        if (updateUser.friendIDs.count() == 0) {
+            if (callback != null) {
+                callback()
+            }
+        }
+    }
+
+    fun getGroupDataForUser(updateUser: User, callback: (() -> Unit)? = null) {
+        Log.i("BackendManager", "Group Count: " + updateUser.groupIDs.count())
+        updateUser.groups = mutableListOf()
+        for (i in 0 until updateUser.groupIDs.count()) {
+            getGroupRecord(updateUser.groupIDs[i]) {
+                group: Group? ->
+                if (group != null) {
+                    Log.i("BackendManager", "Adding Group: " + group.id)
+                    updateUser.groups.add(group)
+                }
+                if (i == updateUser.groupIDs.count() - 1) {
+                    if (callback != null) {
+                        callback()
+                    }
+                }
+            }
+        }
+        if (updateUser.groupIDs.count() == 0) {
+            if (callback != null) {
+                callback()
             }
         }
     }

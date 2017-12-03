@@ -20,7 +20,9 @@ class FirebaseMessageService : FirebaseMessagingService() {
         val READY_RESPONSE = "READY_RESPONSE"
         val READY_DECISION = "READY_DECISION"
         val ADDED_AS_FRIEND = "ADDED_AS_FRIEND"
+        val REMOVED_AS_FRIEND = "REMOVED_AS_FRIEND"
         val ADDED_TO_GROUP = "ADDED_TO_GROUP"
+        val REMOVED_FROM_GROUP = "REMOVED_FROM_GROUP"
     }
 
     // Handle a data message or push notification sent by another app.
@@ -54,6 +56,10 @@ class FirebaseMessageService : FirebaseMessagingService() {
                     )
                 } else if (message.data["type"] == ADDED_AS_FRIEND) {
                     broadcastAddedAsFriendMessage(
+                            message.data["senderID"]!!, message.data["senderName"]!!
+                    )
+                } else if (message.data["type"] == REMOVED_AS_FRIEND) {
+                    broadcastRemovedAsFriendMessage(
                             message.data["senderID"]!!, message.data["senderName"]!!
                     )
                 } else if (message.data["type"] == ADDED_TO_GROUP) {
@@ -113,6 +119,13 @@ class FirebaseMessageService : FirebaseMessagingService() {
 
     private fun broadcastAddedAsFriendMessage(senderID: String, senderName: String) {
         val intent = Intent(ADDED_AS_FRIEND)
+        intent.putExtra("senderID", senderID)
+        intent.putExtra("senderName", senderName)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun broadcastRemovedAsFriendMessage(senderID: String, senderName: String) {
+        val intent = Intent(REMOVED_AS_FRIEND)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
