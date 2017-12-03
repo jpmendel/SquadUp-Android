@@ -157,7 +157,7 @@ class BackendManager(context: Context?) {
         data.put("type", FirebaseMessageService.READY_DECISION)
         data.put("senderID", senderID)
         data.put("senderName", senderName)
-        data.put("response", decision)
+        data.put("decision", decision)
         json.put("data", data)
         sendPostRequest(MESSAGING_SERVER_URL, json, { response: JSONObject? ->
             Log.i("BackendManager", "Response: " + response)
