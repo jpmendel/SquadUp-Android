@@ -24,7 +24,6 @@
             android:id="@+id/textViewGroupName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/toolbar"
             android:layout_alignParentStart="true"
             android:scrollHorizontally="true"
             android:text="TextView"
@@ -37,18 +36,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentStart="false"
-            android:layout_alignParentTop="false"
-            android:layout_centerVertical="false">
-
-        </ScrollView>
-
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fabSquadUp"
             android:layout_width="match_parent"
@@ -59,7 +46,8 @@
             android:layout_marginEnd="18dp"
             android:clickable="true"
             android:src="@drawable/ic_add_black_24dp"
-            android:tint="@android:color/white" />
+            android:tint="@android:color/white"
+            tools:src="@drawable/launcher_squadup" />
 
         <ListView
             android:id="@+id/groupMemberListView"
