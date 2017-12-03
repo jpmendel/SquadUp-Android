@@ -172,7 +172,7 @@ class FriendsFragment : Fragment() {
                 .setView(inputContainer)
                 .setPositiveButton("OK", {
                     _: DialogInterface, _: Int ->
-                    Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseActivity, "Created group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
                     //create the new group, add the userIDs, and send it to the backend
                     val createdGroup = Group(groupNameInput.text.toString())
 
