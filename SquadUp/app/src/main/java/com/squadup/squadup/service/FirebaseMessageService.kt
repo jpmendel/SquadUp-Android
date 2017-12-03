@@ -122,8 +122,8 @@ class FirebaseMessageService : FirebaseMessagingService() {
         val intent = Intent(ADDED_TO_GROUP)
         intent.putExtra("senderID", senderID)
         intent.putExtra("senderName", senderName)
-        intent.putExtra("groupID", senderID)
-        intent.putExtra("groupName", senderName)
+        intent.putExtra("groupID", groupID)
+        intent.putExtra("groupName", groupName)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
