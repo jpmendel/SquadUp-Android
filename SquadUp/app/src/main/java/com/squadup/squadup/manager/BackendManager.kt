@@ -154,7 +154,7 @@ class BackendManager(context: Context?) {
         json.put("token", FirebaseIDService.getToken())
         json.put("to", "/topics/" + topic)
         val data = JSONObject()
-        data.put("type", FirebaseMessageService.READY_RESPONSE)
+        data.put("type", FirebaseMessageService.READY_DECISION)
         data.put("senderID", senderID)
         data.put("senderName", senderName)
         data.put("response", decision)
