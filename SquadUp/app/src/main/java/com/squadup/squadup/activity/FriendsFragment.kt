@@ -166,18 +166,11 @@ class FriendsFragment : Fragment() {
                     _: DialogInterface, _: Int ->
                     Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
                     //create the new group, add the userIDs, and send it to the backend
-                    val groupID = groupNameInput.toString() + "-" + UUID.randomUUID().toString()
+                    val groupID = groupNameInput.text.toString() + "-" + UUID.randomUUID().toString()
                     val createdGroup = Group(groupID, groupNameInput.text.toString())
-                    //add members to group
-                    createdGroup.memberIDs.add(baseActivity.app.user!!.id)
-                    createdGroup.members.add(baseActivity.app.user!!)
-
-                    //add group to user
-                    baseActivity.app.user!!.groupIDs.add(createdGroup.id)
-                    baseActivity.app.user!!.groups.add(createdGroup)
 
                     //add group to selected users
-                    for (friend in selectedFriends){
+                    for (friend in selectedFriends) {
                         createdGroup.memberIDs.add(friend.id)
                         createdGroup.members.add(friend)
                         friend.groupIDs.add(createdGroup.id)
@@ -186,9 +179,9 @@ class FriendsFragment : Fragment() {
 
                     //update the backend for all users and the group involved
                     baseActivity.app.backend.createGroupRecord(createdGroup)
-                    baseActivity.app.backend.createUserRecord(baseActivity.app.user!!)
+
                     val recipients = mutableListOf<String>()
-                    for (friend in selectedFriends){
+                    for (friend in selectedFriends) {
                         baseActivity.app.backend.createUserRecord(friend)
                         if (friend != baseActivity.app.user) {
                             if (friend.registrationToken != null) {
