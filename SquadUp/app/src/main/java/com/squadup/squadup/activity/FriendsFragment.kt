@@ -21,6 +21,7 @@ import com.squadup.squadup.data.Group
 import com.squadup.squadup.data.User
 import com.squadup.squadup.utilities.DialogSelectedFriendsAdapter
 import com.squadup.squadup.utilities.FriendListAdapter
+import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.row_friend.view.*
 import java.util.*
 
@@ -79,19 +80,32 @@ class FriendsFragment : Fragment() {
         createGroupButton.setOnClickListener {
             onCreateGroupButtonClick()
         }
+        addFriendTextField.setOnFocusChangeListener {
+            view: View, focus: Boolean ->
+            if (focus) {
+                refreshAutoCompleteTextField()
+            }
+        }
     }
 
     private fun setupAutoCompleteTextField() {
-        baseActivity.app.userList.remove(baseActivity.app.user!!.id)
-        for (i in 0 until baseActivity.app.user!!.friendIDs.size){
-            baseActivity.app.userList.remove(baseActivity.app.user!!.friendIDs[i])
-        }
-        Log.i("FriendFragment", baseActivity.app.userList.toString())
-        val adapterUserEmails = ArrayAdapter<String>(baseActivity,
-                android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
-        addFriendTextField.setAdapter(adapterUserEmails)
+        refreshAutoCompleteTextField()
         addFriendTextField.maxLines = 1
         addFriendTextField.threshold = 1
+    }
+
+    private fun refreshAutoCompleteTextField() {
+        val addableUsers = mutableListOf<String>()
+        for (user in baseActivity.app.userList) {
+            if (user != baseActivity.app.user!!.id) {
+                if (!baseActivity.app.user!!.friendIDs.contains(user)) {
+                    addableUsers.add(user)
+                }
+            }
+        }
+        val adapterUserEmails = ArrayAdapter<String>(baseActivity,
+                android.R.layout.simple_dropdown_item_1line, addableUsers)
+        addFriendTextField.setAdapter(adapterUserEmails)
     }
 
     private fun setupFriendList() {
@@ -113,12 +127,6 @@ class FriendsFragment : Fragment() {
 
                     //clear the name from the autoCompleteTextView
                     addFriendTextField.text.clear()
-
-                    //remove the name from autoCompleteTextViewAdapter and notify it
-                    baseActivity.app.userList.remove(friendEmail)
-                    val adapterUserEmailsUpdate = ArrayAdapter<String>(baseActivity,
-                            android.R.layout.simple_dropdown_item_1line, baseActivity.app.userList)
-                    addFriendTextField.setAdapter(adapterUserEmailsUpdate)
 
                     Log.i("FriendsFragment", "Jason: " + user.registrationToken)
                     // Send a message alerting the added person that you have added them.
@@ -196,7 +204,11 @@ class FriendsFragment : Fragment() {
                                 createdGroup.id, createdGroup.name
                         )
                     }
-                    //that's it for now, then work on transition to GroupFragment?
+
+                    for (friend in baseActivity.app.user!!.friends) {
+                        friend.selected = false
+                    }
+                    refreshData()
                 })
                 .setNegativeButton("Cancel", {
                     _: DialogInterface, _: Int ->
@@ -221,8 +233,13 @@ class FriendsFragment : Fragment() {
                     .setPositiveButton("Yes", {
                         dialogInterface: DialogInterface?, i: Int ->
                         baseActivity.app.backend.unfriend(user, friend)
-                        baseActivity.app.userList.add(friend.id)
                         refreshData()
+                        if (friend.registrationToken != null) {
+                            baseActivity.app.backend.sendRemovedAsFriendMessage(
+                                    friend.registrationToken!!,
+                                    baseActivity.app.user!!.id, baseActivity.app.user!!.name
+                            )
+                        }
                     })
                     .setNegativeButton("No", {
                         dialogInterface: DialogInterface?, i: Int ->

@@ -45,9 +45,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The image displayed while the GPS is acquiring the user's location.
     private lateinit var loadingImage: ImageView
 
-    // FOR TESTING PURPOSES ONLY.
-    private lateinit var testButton: Button
-
     // The layout at the bottom of the screen containing two buttons.
     private lateinit var lowerButtonLayout: LinearLayout
 
@@ -132,7 +129,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         mapFrame = findViewById(R.id.map_frame)
         statusText = findViewById(R.id.status_text)
         loadingImage = findViewById(R.id.loading_image)
-        testButton = findViewById(R.id.test_button)
         lowerButtonLayout = findViewById(R.id.lower_button_layout)
         meetNowButton = findViewById(R.id.meet_now_button)
         meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
@@ -165,15 +161,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Sets up any buttons on the screen.
     private fun setupButtons() {
-        testButton.setOnClickListener {
-            if (!locations.containsKey("jason")) {
-                app.backend.sendLoginMessage(group.id, "jason", "Jason Corriveau", 40.95231, -76.880407)
-            } else if (!locations.containsKey("stephen")) {
-                app.backend.sendLoginMessage(group.id, "stephen", "Stephen Haberle", 40.957906, -76.884733)
-            } else if (!locations.containsKey("eric")) {
-                app.backend.sendLoginMessage(group.id, "eric", "Eric Marshall", 40.956436, -76.884541)
-            }
-        }
         meetNowButton.setOnClickListener {
             onMeetNowButtonClick()
         }
@@ -261,7 +248,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             stopAnimatingLoadingImage()
             animateScreenIn()
             updateMembersRemainingText()
-            testButton.visibility = View.VISIBLE
         }
     }
 
@@ -597,7 +583,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         if (!findingMeetingLocation) {
             for (member in group.members) {
                 if (member.id != user.id && member.registrationToken != null) {
-                    app.backend.sendNotification(member.registrationToken!!, "${user.name} (SquadUp)", "Hey! Let's meet up!")
+                    app.backend.sendNotification(member.registrationToken!!, group.name, "Hey! Let's meet up!")
                 }
             }
         }

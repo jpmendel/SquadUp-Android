@@ -78,6 +78,7 @@ class MainActivity : BaseActivity() {
     private fun initializeBroadcastReceiver() {
         val intentFilter = IntentFilter()
         intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
+        intentFilter.addAction(FirebaseMessageService.REMOVED_AS_FRIEND)
         intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
         broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
     }
@@ -88,9 +89,11 @@ class MainActivity : BaseActivity() {
                 user: User? ->
                 if (user != null) {
                     app.user = user
-                    app.backend.getGroupAndFriendDataForUser(app.user!!) {
-                        friendsFragment.refreshData()
-                        groupsFragment.refreshData()
+                    app.backend.getFriendDataForUser(app.user!!) {
+                        app.backend.getGroupDataForUser(app.user!!) {
+                            friendsFragment.refreshData()
+                            groupsFragment.refreshData()
+                        }
                     }
                 }
             }
@@ -105,8 +108,9 @@ class MainActivity : BaseActivity() {
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
-                Log.i("MainActivity", "RECEIVED")
                 onAddedAsFriendMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.REMOVED_AS_FRIEND) {
+                onRemovedAsFriendMessageReceived(intent)
             } else if (intent.action == FirebaseMessageService.ADDED_TO_GROUP) {
                 onAddedToGroupMessageReceived(intent)
             }
@@ -127,6 +131,17 @@ class MainActivity : BaseActivity() {
             }
         }
         Toast.makeText(baseContext, "$senderName added you as a friend!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun onRemovedAsFriendMessageReceived(intent: Intent) {
+        val senderID = intent.getStringExtra("senderID")
+        val senderName = intent.getStringExtra("senderName")
+        if (app.user != null) {
+            app.user!!.friendIDs.remove(senderID)
+            app.user!!.friends.filter { it.id == senderID }
+            friendsFragment.refreshData()
+        }
+        Toast.makeText(baseContext, "$senderName unfriended you!", Toast.LENGTH_SHORT).show()
     }
 
     private fun onAddedToGroupMessageReceived(intent: Intent) {
