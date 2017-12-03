@@ -18,10 +18,8 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
 
     private val activity: BaseActivity = activity
     private val fragment: GroupsFragment = fragment
-    private val groups: MutableList<Group> = groups
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-
         val group = getItem(position)
         var returnView = convertView
 
@@ -32,7 +30,7 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
 
         returnView!!.setOnClickListener {
             fragment.showGroupView(group)
-            }
+        }
 
         val groupName = returnView.findViewById<TextView>(R.id.friend_name)
         groupName.text = group.name

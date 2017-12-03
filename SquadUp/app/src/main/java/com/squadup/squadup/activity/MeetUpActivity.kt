@@ -11,6 +11,7 @@ import android.os.Handler
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -522,11 +523,12 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             val senderName = intent.getStringExtra("senderName")
             requestedReady = true
             meetNowButton.setBackgroundResource(R.drawable.shape_round_button_gray)
-            AlertDialog.Builder(baseContext)
+            AlertDialog.Builder(this)
                     .setTitle(senderName)
                     .setMessage("Hey! Let's go!")
                     .setPositiveButton("Yes") {
                         dialog, id ->
+                        Log.i("MeetUpActivity", "SENDER ID: " + senderID)
                         app.backend.sendReadyResponseMessage(group.id, user.id, user.name, senderID,true)
                     }
                     .setNegativeButton("No") {

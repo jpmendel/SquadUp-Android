@@ -38,22 +38,18 @@ class MainActivity : BaseActivity() {
 
     private lateinit var currentFragment: String
 
-    private var testBool : Boolean = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
+        refreshUserData()
         broadcastManager = LocalBroadcastManager.getInstance(this)
     }
 
     override fun onStart() {
-        refreshUserData()
-        initializeBroadcastReceiver()
-        while (!testBool) {
-            Thread.sleep(10)
-        }
         super.onStart()
+        Log.i("MainActivity", "GROUPS: " + app.user!!.groups.toString())
+        initializeBroadcastReceiver()
     }
 
     override fun onStop() {
@@ -89,7 +85,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun refreshUserData() {
-        testBool = false
         if (app.user != null) {
             app.backend.getUserRecord(app.user!!.id) {
                 user: User? ->
@@ -99,7 +94,6 @@ class MainActivity : BaseActivity() {
                         app.backend.getGroupDataForUser(app.user!!) {
                             friendsFragment.refreshData()
                             groupsFragment.refreshData()
-                            testBool = true
                         }
                     }
                 }

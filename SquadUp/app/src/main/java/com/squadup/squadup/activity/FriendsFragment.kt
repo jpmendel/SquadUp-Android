@@ -109,7 +109,6 @@ class FriendsFragment : Fragment() {
     }
 
     private fun setupFriendList() {
-        Log.i("FriendFragment", "User friends: " + baseActivity.app.user!!.friends)
         friendListAdapter = FriendListAdapter(baseActivity, this, baseActivity.app.user!!.friends)
         friendList.adapter = friendListAdapter
     }

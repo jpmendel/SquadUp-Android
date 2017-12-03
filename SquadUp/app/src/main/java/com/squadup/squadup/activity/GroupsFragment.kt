@@ -27,9 +27,14 @@ import com.squadup.squadup.utilities.GroupListAdapter
  */
 class GroupsFragment : Fragment() {
 
+    companion object {
+        fun newInstance(): GroupsFragment {
+            return GroupsFragment()
+        }
+    }
+
     private lateinit var baseActivity: BaseActivity
     private lateinit var groupsList: ListView
-    private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var groupsListAdapter: GroupListAdapter
 
 
@@ -38,57 +43,37 @@ class GroupsFragment : Fragment() {
         return inflater!!.inflate(R.layout.fragment_groups, container, false)
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        initializeViews()
+        setupGroupList()
+        groupsList.isClickable = true
+    }
+
+    private fun initializeViews() {
+        baseActivity = activity as BaseActivity
+        groupsList = baseActivity.findViewById(R.id.groupsListView)
+    }
+
     private fun setupGroupList() {
         Log.i("FriendFragment", "User friends: " + baseActivity.app.user!!.groups)
         groupsListAdapter = GroupListAdapter(baseActivity, this, baseActivity.app.user!!.groups)
         groupsList.adapter = groupsListAdapter
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        initializeViews()
-        setupGroupList()
-        groupsList.isClickable = true
-
-    }
-
     fun showGroupView(g : Group){
-        baseActivity.app.backend.getMemberInfoForGroup(g){
+        baseActivity.app.backend.getMemberInfoForGroup(g) {
             group: Group? ->
-            baseActivity.app.group = group
-            Log.i("GROUPSFRAG: ShouldHave", baseActivity.app.group!!.members.toString())
-            val intent = Intent(context, GroupViewActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-    private fun initializeViews(){
-        baseActivity = activity as BaseActivity
-        groupsList = baseActivity.findViewById(R.id.groupsListView)
-    }
-
-    companion object {
-        // TODO: Rename parameter arguments, choose names that match
-        // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-        private val ARG_ITEM_NUMBER = "item_number"
-
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @return A new instance of fragment GroupsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        fun newInstance(): GroupsFragment {
-            val fragment = GroupsFragment()
-            return GroupsFragment()
+            if (group != null) {
+                baseActivity.app.group = group
+                Log.i("GROUPSFRAG: ShouldHave", baseActivity.app.group!!.members.toString())
+                val intent = Intent(baseActivity, GroupViewActivity::class.java)
+                startActivity(intent)
+            }
         }
     }
 
     fun onShowFragment() {
-        Log.i("GroupsFragment", "Fragment Selected")
         refreshData()
     }
 
@@ -97,4 +82,4 @@ class GroupsFragment : Fragment() {
         groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups)
     }
 
-}// Required empty public constructor
+}

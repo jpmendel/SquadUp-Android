@@ -135,22 +135,26 @@ class LoginActivity : BaseActivity() {
         app.backend.getUserRecord(userID) {
             user: User? ->
             Log.i("LoginActivity", "Here now?")
-                if (user == null) {
-                    Log.i("LoginActivity", "New user!!!")
-                    //create the user object, send it to the backend and application manager
-                    val newUser = User(account.email!!, account.displayName!!)
-                    app.backend.createUserRecord(newUser)
-                    app.backend.addUserToUserList(newUser.id)
-                    app.user = newUser
-                } else {
-                    //send the user to the application manager
-                    Log.i("LoginActivity", "Old user!!!")
-                    app.user = user
-                }
+            if (user == null) {
+                Log.i("LoginActivity", "New user!!!")
+                //create the user object, send it to the backend and application manager
+                val newUser = User(account.email!!, account.displayName!!)
+                app.backend.createUserRecord(newUser)
+                app.backend.addUserToUserList(newUser.id)
+                app.user = newUser
+            } else {
+                //send the user to the application manager
+                Log.i("LoginActivity", "Old user!!!")
+                app.user = user
+            }
             app.backend.getFriendDataForUser(app.user!!) {
                 app.backend.getGroupDataForUser(app.user!!) {
+                    Log.i("LoginActivity", "GROUPS: " + app.user!!.groups.toString())
                     app.updateCurrentUserRegistration {
-                        showScreen(MainActivity::class.java)
+                        showScreen(MainActivity::class.java) {
+                            intent: Intent ->
+                            intent.putExtra("login", true)
+                        }
                     }
                 }
             }
