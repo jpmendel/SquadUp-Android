@@ -184,17 +184,10 @@ class BackendManager(context: Context?) {
     }
 
     // Sends a message letting the members of a group know you created the group.
-    fun sendAddedToGroupMessage(recipients: MutableList<String>, senderID: String, senderName: String, groupID: String, groupName: String) {
-        if (recipients.isEmpty()) {
-            return
-        }
+    fun sendAddedToGroupMessage(recipient: String, senderID: String, senderName: String, groupID: String, groupName: String) {
         val json = JSONObject()
         json.put("token", FirebaseIDService.getToken())
-        val registrationTokens = JSONArray()
-        for (recipient in recipients) {
-            registrationTokens.put(recipient)
-        }
-        json.put("to", registrationTokens)
+        json.put("to", recipient)
         val data = JSONObject()
         data.put("type", FirebaseMessageService.ADDED_TO_GROUP)
         data.put("senderID", senderID)

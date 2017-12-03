@@ -166,8 +166,7 @@ class FriendsFragment : Fragment() {
                     _: DialogInterface, _: Int ->
                     Toast.makeText(baseActivity, "Create group: " + groupNameInput.text, Toast.LENGTH_SHORT).show()
                     //create the new group, add the userIDs, and send it to the backend
-                    val groupID = groupNameInput.text.toString() + "-" + UUID.randomUUID().toString()
-                    val createdGroup = Group(groupID, groupNameInput.text.toString())
+                    val createdGroup = Group(groupNameInput.text.toString())
 
                     //add group to selected users
                     for (friend in selectedFriends) {
@@ -190,11 +189,13 @@ class FriendsFragment : Fragment() {
                         }
                     }
 
-                    baseActivity.app.backend.sendAddedToGroupMessage(
-                            recipients,
-                            baseActivity.app.user!!.id, baseActivity.app.user!!.name,
-                            createdGroup.id, createdGroup.name
-                    )
+                    for (recipient in recipients) {
+                        baseActivity.app.backend.sendAddedToGroupMessage(
+                                recipient,
+                                baseActivity.app.user!!.id, baseActivity.app.user!!.name,
+                                createdGroup.id, createdGroup.name
+                        )
+                    }
                     //that's it for now, then work on transition to GroupFragment?
                 })
                 .setNegativeButton("Cancel", {
