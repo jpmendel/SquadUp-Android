@@ -1,10 +1,7 @@
 package com.squadup.squadup.activity
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +19,9 @@ class GroupsFragment : Fragment() {
     }
 
     private lateinit var baseActivity: BaseActivity
+
     private lateinit var groupsList: ListView
+
     private lateinit var groupsListAdapter: GroupListAdapter
 
 
@@ -53,8 +52,7 @@ class GroupsFragment : Fragment() {
             group: Group? ->
             if (group != null) {
                 baseActivity.app.group = group
-                val intent = Intent(baseActivity, GroupViewActivity::class.java)
-                startActivity(intent)
+                baseActivity.showScreen(GroupViewActivity::class.java)
             }
         }
     }
@@ -64,7 +62,7 @@ class GroupsFragment : Fragment() {
     }
 
     fun refreshData() {
-        groupsListAdapter.updateDataSet(baseActivity.app.user!!.groups)
+        groupsListAdapter.notifyDataSetChanged()
     }
 
 }

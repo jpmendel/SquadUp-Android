@@ -107,9 +107,6 @@ class FriendsFragment : Fragment() {
                     baseActivity.app.backend.addFriend(baseActivity.app.user!!, user)
                     refreshData()
 
-                    //clear the name from the autoCompleteTextView
-                    addFriendTextField.text.clear()
-
                     // Send a message alerting the added person that you have added them.
                     if (user.registrationToken != null) {
                         baseActivity.app.backend.sendAddedAsFriendMessage(
@@ -124,6 +121,7 @@ class FriendsFragment : Fragment() {
         } else {
             Toast.makeText(baseActivity, "Enter a user email", Toast.LENGTH_SHORT).show()
         }
+        addFriendTextField.text.clear()
         baseActivity.hideKeyboard()
     }
 
@@ -196,7 +194,7 @@ class FriendsFragment : Fragment() {
     }
 
     fun refreshData() {
-        friendListAdapter.updateDataSet(baseActivity.app.user!!.friends)
+        friendListAdapter.notifyDataSetChanged()
     }
 
     fun selectFriend(friend: User) {

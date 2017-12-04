@@ -56,10 +56,4 @@ class FriendListAdapter(activity: BaseActivity, fragment: FriendsFragment, frien
         return returnView
     }
 
-    fun updateDataSet(friends: MutableList<User>) {
-        clear()
-        addAll(friends)
-        notifyDataSetChanged()
-    }
-
 }

@@ -38,10 +38,4 @@ class GroupListAdapter(activity: BaseActivity, fragment: GroupsFragment, groups:
         return returnView
     }
 
-
-    fun updateDataSet(groups: MutableList<Group>) {
-        clear()
-        addAll(groups)
-        notifyDataSetChanged()
-    }
 }

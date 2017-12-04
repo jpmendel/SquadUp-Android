@@ -67,9 +67,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // The group the user is trying to meet with.
     private lateinit var group: Group
 
-    // Manages receiving broadcast messages from the FirebaseMessageService.
-    private lateinit var broadcastManager: LocalBroadcastManager
-
     // Manages the requesting of location updates.
     private lateinit var locationManager: LocationManager
 
@@ -94,6 +91,9 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     // Whether or not the app has started to find a meeting location.
     private var findingMeetingLocation: Boolean = false
 
+    // Whether or not the user can send a notification to their group.
+    private var canSendNotification: Boolean = true
+
     // Keeps track of the names displayed over group members' heads without centering on them.
     private var lastMarker: Marker? = null
 
@@ -110,7 +110,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         initializeViews()
         resetValues()
         setupButtons()
-        broadcastManager = LocalBroadcastManager.getInstance(this)
         loadGoogleMap()
     }
 
@@ -119,7 +118,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         super.onStop()
         stopAnimatingText()
         app.backend.stopListening(group.id)
-        broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
     // Sets up all of the views on the screen.
@@ -140,8 +138,11 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     }
 
     // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
-    private fun initializeBroadcastReceiver() {
+    override fun initializeBroadcastReceiver() {
         val intentFilter = IntentFilter()
+        intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
+        intentFilter.addAction(FirebaseMessageService.REMOVED_AS_FRIEND)
+        intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
         intentFilter.addAction(FirebaseMessageService.LOGIN)
         intentFilter.addAction(FirebaseMessageService.LOCATION)
         intentFilter.addAction(FirebaseMessageService.READY_REQUEST)
@@ -244,7 +245,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             myLocation = location
             addLocation(user.id, user.name, LatLng(location.latitude, location.longitude))
             setInitialRegion()
-            initializeBroadcastReceiver()
             sendLoginMessage()
             stopAnimatingLoadingImage()
             animateScreenIn()
@@ -462,18 +462,27 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     }
 
     // The receiver to handle any broadcasts from the FirebaseMessageService.
-    private val broadcastReceiver = object : BroadcastReceiver() {
+    override val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == FirebaseMessageService.LOGIN) {
-                onLoginMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.LOCATION) {
-                onLocationMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.READY_REQUEST) {
-                onReadyRequestMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.READY_RESPONSE) {
-                onReadyResponseMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.READY_DECISION) {
-                onReadyDecisionMessageReceived(intent)
+            if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
+                onAddedAsFriendMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
+                onRemovedAsFriendMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
+                onAddedToGroupMessageReceived(intent)
+            }
+            if (myLocation != null) {
+                if (intent.action == FirebaseMessageService.LOGIN) {
+                    onLoginMessageReceived(intent)
+                } else if (intent.action == FirebaseMessageService.LOCATION) {
+                    onLocationMessageReceived(intent)
+                } else if (intent.action == FirebaseMessageService.READY_REQUEST) {
+                    onReadyRequestMessageReceived(intent)
+                } else if (intent.action == FirebaseMessageService.READY_RESPONSE) {
+                    onReadyResponseMessageReceived(intent)
+                } else if (intent.action == FirebaseMessageService.READY_DECISION) {
+                    onReadyDecisionMessageReceived(intent)
+                }
             }
         }
     }
@@ -581,11 +590,24 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     // Runs when the notify group button is pressed.
     private fun onNotifyGroupButtonClick() {
-        if (!findingMeetingLocation) {
-            for (member in group.members) {
-                if (member != user && member.registrationToken != null) {
-                    app.backend.sendNotification(member.registrationToken!!, group.name, "Hey! Let's meet up!")
+        if (canSendNotification) {
+            if (!findingMeetingLocation) {
+                canSendNotification = false
+                notifyGroupButton.setBackgroundResource(R.drawable.shape_round_button_gray)
+                for (member in group.members) {
+                    if (member != user && member.registrationToken != null) {
+                        app.backend.sendNotification(member.registrationToken!!, group.name, "Hey! Let's meet up!")
+                    }
                 }
+                Toast.makeText(baseContext, "Sent notification to group!", Toast.LENGTH_SHORT).show()
+                Handler().postDelayed({
+                    canSendNotification = true
+                    if (!findingMeetingLocation) {
+                        notifyGroupButton.setBackgroundResource(R.drawable.shape_round_button_blue)
+                    } else {
+                        notifyGroupButton.setBackgroundResource(R.drawable.shape_round_button_gray)
+                    }
+                }, 3000)
             }
         }
     }

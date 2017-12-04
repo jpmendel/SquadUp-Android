@@ -1,22 +1,12 @@
 package com.squadup.squadup.activity
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.support.design.widget.TabLayout
-import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
-import android.view.animation.DecelerateInterpolator
-import android.widget.FrameLayout
-import android.widget.Toast
-import com.squadup.squadup.R
-import com.squadup.squadup.data.Group
-import com.squadup.squadup.data.User
-import com.squadup.squadup.service.FirebaseMessageService
-import android.widget.EditText
 import android.view.MotionEvent
+import android.view.animation.DecelerateInterpolator
+import android.widget.EditText
+import android.widget.FrameLayout
+import com.squadup.squadup.R
 
 class MainActivity : BaseActivity() {
 
@@ -28,30 +18,16 @@ class MainActivity : BaseActivity() {
 
     private lateinit var groupsFragmentFrame: FrameLayout
 
-    private lateinit var groupsFragment: GroupsFragment
+    lateinit var groupsFragment: GroupsFragment
 
     private lateinit var friendsFragmentFrame: FrameLayout
 
-    private lateinit var friendsFragment: FriendsFragment
-
-    private lateinit var broadcastManager: LocalBroadcastManager
+    lateinit var friendsFragment: FriendsFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
-        broadcastManager = LocalBroadcastManager.getInstance(this)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        refreshUserData()
-        initializeBroadcastReceiver()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        broadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
     override fun initializeViews() {
@@ -71,102 +47,8 @@ class MainActivity : BaseActivity() {
         friendsFragmentFrame.translationX = screenWidth
     }
 
-    // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
-    private fun initializeBroadcastReceiver() {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
-        intentFilter.addAction(FirebaseMessageService.REMOVED_AS_FRIEND)
-        intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
-        broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
-    }
-
-    private fun refreshUserData() {
-        if (app.user != null) {
-            app.backend.getUserRecord(app.user!!.id) {
-                user: User? ->
-                if (user != null) {
-                    app.user = user
-                    app.backend.getFriendDataForUser(app.user!!) {
-                        userWithFriends: User ->
-                        app.user = userWithFriends
-                        app.backend.getGroupDataForUser(app.user!!) {
-                            userWithGroups: User ->
-                            app.user = userWithGroups
-                            friendsFragment.refreshData()
-                            groupsFragment.refreshData()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     override fun onBackPressed() {
         // Don't allow users to back out of this screen.
-    }
-
-    // The receiver to handle any broadcasts from the FirebaseMessageService.
-    private val broadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
-                onAddedAsFriendMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.REMOVED_AS_FRIEND) {
-                onRemovedAsFriendMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.ADDED_TO_GROUP) {
-                onAddedToGroupMessageReceived(intent)
-            }
-        }
-    }
-
-    private fun onAddedAsFriendMessageReceived(intent: Intent) {
-        val senderID = intent.getStringExtra("senderID")
-        val senderName = intent.getStringExtra("senderName")
-        if (app.user != null) {
-            if (!app.user!!.friendIDs.contains(senderID)) {
-                app.user!!.friendIDs.add(senderID)
-            }
-            app.backend.getUserRecord(senderID) {
-                user: User? ->
-                if (user != null) {
-                    if (!app.user!!.friends.contains(user)) {
-                        app.user!!.friends.add(user)
-                    }
-                    friendsFragment.refreshData()
-                }
-            }
-        }
-        Toast.makeText(baseContext, "$senderName added you as a friend!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun onRemovedAsFriendMessageReceived(intent: Intent) {
-        val senderID = intent.getStringExtra("senderID")
-        val senderName = intent.getStringExtra("senderName")
-        if (app.user != null) {
-            app.user!!.friendIDs.remove(senderID)
-            app.user!!.friends.filter { it.id == senderID }
-            friendsFragment.refreshData()
-        }
-        Toast.makeText(baseContext, "$senderName unfriended you!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun onAddedToGroupMessageReceived(intent: Intent) {
-        val groupID = intent.getStringExtra("groupID")
-        val groupName = intent.getStringExtra("groupName")
-        if (app.user != null) {
-            if (!app.user!!.groupIDs.contains(groupID)) {
-                app.user!!.groupIDs.add(groupID)
-            }
-            app.backend.getGroupRecord(groupID) {
-                group: Group? ->
-                if (group != null) {
-                    if (!app.user!!.groups.contains(group)) {
-                        app.user!!.groups.add(group)
-                    }
-                    groupsFragment.refreshData()
-                }
-            }
-        }
-        Toast.makeText(baseContext, "You have been added to the group: $groupName!", Toast.LENGTH_SHORT).show()
     }
 
     // Exchanges fragments depending on which tab is clicked on.
