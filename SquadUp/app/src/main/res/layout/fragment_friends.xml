@@ -50,7 +50,8 @@
         android:layout_alignParentEnd="false"
         android:layout_alignParentStart="false"
         android:layout_alignParentTop="false"
-        android:layout_below="@+id/linearLayout" />
+        android:layout_below="@+id/linearLayout"
+        android:scrollbars="none" />
 
     <FrameLayout
         android:id="@+id/addGroupFrame"
