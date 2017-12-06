@@ -113,10 +113,16 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         loadGoogleMap()
     }
 
+    override fun onStart() {}
+
     // Runs when the activity is closed and removed from memory.
     override fun onStop() {
         super.onStop()
         stopAnimatingText()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         app.backend.stopListening(group.id)
     }
 
@@ -249,6 +255,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             stopAnimatingLoadingImage()
             animateScreenIn()
             updateMembersRemainingText()
+            initializeBroadcastReceiver()
         }
     }
 
