@@ -245,12 +245,12 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         if (location != null) {
             myLocation = location
             addLocation(user.id, user.name, LatLng(location.latitude, location.longitude))
+            initializeMeetUpBroadcastReceiver()
             setInitialRegion()
             sendLoginMessage()
             stopAnimatingLoadingImage()
             animateScreenIn()
             updateMembersRemainingText()
-            initializeMeetUpBroadcastReceiver()
         }
     }
 
@@ -465,18 +465,16 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
 
     private val meetUpBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (myLocation != null) {
-                if (intent.action == FirebaseMessageService.LOGIN) {
-                    onLoginMessageReceived(intent)
-                } else if (intent.action == FirebaseMessageService.LOCATION) {
-                    onLocationMessageReceived(intent)
-                } else if (intent.action == FirebaseMessageService.READY_REQUEST) {
-                    onReadyRequestMessageReceived(intent)
-                } else if (intent.action == FirebaseMessageService.READY_RESPONSE) {
-                    onReadyResponseMessageReceived(intent)
-                } else if (intent.action == FirebaseMessageService.READY_DECISION) {
-                    onReadyDecisionMessageReceived(intent)
-                }
+            if (intent.action == FirebaseMessageService.LOGIN) {
+                onLoginMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.LOCATION) {
+                onLocationMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.READY_REQUEST) {
+                onReadyRequestMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.READY_RESPONSE) {
+                onReadyResponseMessageReceived(intent)
+            } else if (intent.action == FirebaseMessageService.READY_DECISION) {
+                onReadyDecisionMessageReceived(intent)
             }
         }
     }
@@ -610,7 +608,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     private fun onContinueButtonClick() {
         stopAnimatingText()
         app.backend.stopListening(group.id)
-        broadcastManager.unregisterReceiver(broadcastReceiver)
+        broadcastManager.unregisterReceiver(meetUpBroadcastReceiver)
         showScreen(MeetingLocationViewActivity::class.java) {
             intent: Intent ->
             intent.putExtra("meetingLocation", meetingLocation!!.key)

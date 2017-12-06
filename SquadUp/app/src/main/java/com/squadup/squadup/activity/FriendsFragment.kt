@@ -151,41 +151,45 @@ class FriendsFragment : Fragment() {
                 .setView(inputContainer)
                 .setPositiveButton("OK", {
                     dialog, i ->
-                    Toast.makeText(baseActivity, "Created group: ${groupNameInput.text}", Toast.LENGTH_SHORT).show()
-                    //create the new group, add the userIDs, and send it to the backend
-                    val createdGroup = Group(groupNameInput.text.toString())
+                    if (groupNameInput.text.length > 1) {
+                        Toast.makeText(baseActivity, "Created group: ${groupNameInput.text}", Toast.LENGTH_SHORT).show()
+                        //create the new group, add the userIDs, and send it to the backend
+                        val createdGroup = Group(groupNameInput.text.toString())
 
-                    //add group to selected users
-                    for (friend in selectedFriends) {
-                        createdGroup.memberIDs.add(friend.id)
-                        createdGroup.members.add(friend)
-                        friend.groupIDs.add(createdGroup.id)
-                        friend.groups.add(createdGroup)
-                    }
+                        //add group to selected users
+                        for (friend in selectedFriends) {
+                            createdGroup.memberIDs.add(friend.id)
+                            createdGroup.members.add(friend)
+                            friend.groupIDs.add(createdGroup.id)
+                            friend.groups.add(createdGroup)
+                        }
 
-                    //update the backend for all users and the group involved
-                    baseActivity.app.backend.createGroupRecord(createdGroup)
+                        //update the backend for all users and the group involved
+                        baseActivity.app.backend.createGroupRecord(createdGroup)
 
-                    val recipients = mutableListOf<String>()
-                    for (friend in selectedFriends) {
-                        baseActivity.app.backend.createUserRecord(friend)
-                        if (friend != baseActivity.app.user) {
-                            if (friend.registrationToken != null) {
-                                recipients.add(friend.registrationToken!!)
+                        val recipients = mutableListOf<String>()
+                        for (friend in selectedFriends) {
+                            baseActivity.app.backend.createUserRecord(friend)
+                            if (friend != baseActivity.app.user) {
+                                if (friend.registrationToken != null) {
+                                    recipients.add(friend.registrationToken!!)
+                                }
                             }
                         }
-                    }
 
-                    for (recipient in recipients) {
-                        baseActivity.app.backend.sendAddedToGroupMessage(
-                                recipient,
-                                baseActivity.app.user!!.id, baseActivity.app.user!!.name,
-                                createdGroup.id, createdGroup.name
-                        )
-                    }
+                        for (recipient in recipients) {
+                            baseActivity.app.backend.sendAddedToGroupMessage(
+                                    recipient,
+                                    baseActivity.app.user!!.id, baseActivity.app.user!!.name,
+                                    createdGroup.id, createdGroup.name
+                            )
+                        }
 
-                    deselectAllFriends()
-                    refreshData()
+                        deselectAllFriends()
+                        refreshData()
+                    } else {
+                        Toast.makeText(baseActivity, "Enter a name of at least 2 characters", Toast.LENGTH_SHORT).show()
+                    }
                 })
                 .setNegativeButton("Cancel", {
                     dialog, i ->
@@ -227,7 +231,7 @@ class FriendsFragment : Fragment() {
         if (user != null) {
             AlertDialog.Builder(baseActivity)
                     .setTitle("Squad Up")
-                    .setMessage("Delete this friend?")
+                    .setMessage("Remove this friend?")
                     .setPositiveButton("Yes", {
                         dialog, i ->
                         baseActivity.app.backend.unfriend(user, friend)
