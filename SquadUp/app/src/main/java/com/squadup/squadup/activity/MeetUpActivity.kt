@@ -113,8 +113,6 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         loadGoogleMap()
     }
 
-    override fun onStart() {}
-
     // Runs when the activity is closed and removed from memory.
     override fun onStop() {
         super.onStop()
@@ -144,17 +142,14 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
     }
 
     // Sets up the receiver to get broadcast messages from the FirebaseMessageService.
-    override fun initializeBroadcastReceiver() {
+    private fun initializeMeetUpBroadcastReceiver() {
         val intentFilter = IntentFilter()
-        intentFilter.addAction(FirebaseMessageService.ADDED_AS_FRIEND)
-        intentFilter.addAction(FirebaseMessageService.REMOVED_AS_FRIEND)
-        intentFilter.addAction(FirebaseMessageService.ADDED_TO_GROUP)
         intentFilter.addAction(FirebaseMessageService.LOGIN)
         intentFilter.addAction(FirebaseMessageService.LOCATION)
         intentFilter.addAction(FirebaseMessageService.READY_REQUEST)
         intentFilter.addAction(FirebaseMessageService.READY_RESPONSE)
         intentFilter.addAction(FirebaseMessageService.READY_DECISION)
-        broadcastManager.registerReceiver(broadcastReceiver, intentFilter)
+        broadcastManager.registerReceiver(meetUpBroadcastReceiver, intentFilter)
         app.backend.startListening(group.id)
     }
 
@@ -255,7 +250,7 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
             stopAnimatingLoadingImage()
             animateScreenIn()
             updateMembersRemainingText()
-            initializeBroadcastReceiver()
+            initializeMeetUpBroadcastReceiver()
         }
     }
 
@@ -468,16 +463,8 @@ class MeetUpActivity : BaseActivity(), OnMapReadyCallback, LocationListener {
         }, 1000L + locations.values.count() * 500L)
     }
 
-    // The receiver to handle any broadcasts from the FirebaseMessageService.
-    override val broadcastReceiver = object : BroadcastReceiver() {
+    private val meetUpBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
-                onAddedAsFriendMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
-                onRemovedAsFriendMessageReceived(intent)
-            } else if (intent.action == FirebaseMessageService.ADDED_AS_FRIEND) {
-                onAddedToGroupMessageReceived(intent)
-            }
             if (myLocation != null) {
                 if (intent.action == FirebaseMessageService.LOGIN) {
                     onLoginMessageReceived(intent)
