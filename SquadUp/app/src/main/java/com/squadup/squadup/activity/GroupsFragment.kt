@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import com.squadup.squadup.R
 import com.squadup.squadup.data.Group
+import com.squadup.squadup.utilities.FriendListAdapter
 import com.squadup.squadup.utilities.GroupListAdapter
 
 class GroupsFragment : Fragment() {
@@ -62,6 +63,7 @@ class GroupsFragment : Fragment() {
     }
 
     fun refreshData() {
+        setupGroupList()
         groupsListAdapter.notifyDataSetChanged()
     }
 

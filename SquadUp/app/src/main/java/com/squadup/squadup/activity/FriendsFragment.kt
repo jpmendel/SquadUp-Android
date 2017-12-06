@@ -194,6 +194,7 @@ class FriendsFragment : Fragment() {
     }
 
     fun refreshData() {
+        setupFriendList()
         friendListAdapter.notifyDataSetChanged()
     }
 
@@ -233,8 +234,7 @@ class FriendsFragment : Fragment() {
                         refreshData()
                         if (friend.registrationToken != null) {
                             baseActivity.app.backend.sendRemovedAsFriendMessage(
-                                    friend.registrationToken!!,
-                                    baseActivity.app.user!!.id, baseActivity.app.user!!.name
+                                    friend.registrationToken!!, user.id, user.name
                             )
                         }
                     })

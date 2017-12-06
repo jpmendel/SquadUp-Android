@@ -200,7 +200,12 @@ open class BaseActivity : AppCompatActivity() {
         val senderName = intent.getStringExtra("senderName")
         if (app.user != null) {
             app.user!!.friendIDs.remove(senderID)
-            app.user!!.friends.filter { it.id == senderID }
+            for (i in 0 until app.user!!.friends.count()) {
+                if (app.user!!.friends[i].id == senderID) {
+                    app.user!!.friends.removeAt(i)
+                    break
+                }
+            }
             if (this is MainActivity) {
                 friendsFragment.refreshData()
             }
